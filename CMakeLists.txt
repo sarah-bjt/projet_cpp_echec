@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # You can set the name of your project here
-project(SimpleCpp)
+project(ImGuiTemplate)
 add_executable(${PROJECT_NAME})
 
 # Choose your C++ version
