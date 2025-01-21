@@ -11,7 +11,7 @@ on:
 env:
   cmake_configure_args: ""
   cmakelists_folder: "."
-  cmake_target: ImGuiTemplate
+  cmake_target: ImGuiTemplate ##-------a modifier si on change le nom du projet -------------------------------------------------------------------------------------------------------------
 
 jobs:
   build-and-run-tests:
