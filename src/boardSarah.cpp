@@ -1,8 +1,8 @@
 #include "boardSarah.hpp"
 #include <imgui.h>
 #include <iostream>
-#include "pieceSarah.hpp"
 #include "quick_imgui/quick_imgui.hpp"
+
 
 void Board_sarah::draw_pion_line()
 {
