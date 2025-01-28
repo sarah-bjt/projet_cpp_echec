@@ -5,10 +5,11 @@
 class Piece {
 private:
     std::pair<std::string, int> type;
-    enum class state {
+    enum class State {
         dead,
         alive,
     };
+    State state;
 
 public:
     void                             move(const std::pair<int, int>& newPosition); // Déplace la pièce
