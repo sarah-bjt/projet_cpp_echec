@@ -22,8 +22,8 @@ private:
     std::pair<int, int> position;
 
 public:
-    void
-                                     move(const std::pair<int, int>& newPosition);  // Déplace la pièce
+    std::vector<std::pair<int, int>> possible_moves() const;                        // Retourne les déplacements possibles
+    void                             move(const std::pair<int, int>& newPosition);  // Déplace la pièce
     std::vector<std::pair<int, int>> possible_moves(const std::string& type) const; // Retourne les déplacements possibles
     std::pair<int, int>              get_position() const;                          // Récupère la position actuelle
     std::string                      get_type() const;                              // Récupère le type de la pièce
