@@ -1,6 +1,7 @@
 #include "boardSarah.hpp"
 #include <imgui.h>
 #include <iostream>
+#include "pieceSarah.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
 void Board_sarah::draw_pion_line()
@@ -74,17 +75,18 @@ void Board_sarah::draw_table()
                 ImGui::TableSetColumnIndex(column); // Positionne sur la bonne colonne
 
                 // Alterne les couleurs des cases
-                bool   is_black = (row + column) % 2 == 0;
-                ImVec4 color    = is_black ? ImVec4(0.2f, 0.2f, 0.2f, 1.0f) : ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+                bool   is_black     = (row + column) % 2 == 0;
+                ImVec4 color        = is_black ? ImVec4(0.2f, 0.2f, 0.2f, 1.0f) : ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+                ImVec4 color_active = ImVec4(0.1f, 0.2f, 0.2f, 1.0f);
                 ImGui::PushStyleColor(ImGuiCol_Button, color);
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, color_active);
 
-                ImGui::Button("1", ImVec2{50.f, 50.f});
+                ImGui::Button("##id", ImVec2{50.f, 50.f});
 
-                ImGui::PopStyleColor(3); // Retire les styles de couleur
+                ImGui::PopStyleColor(3);
             }
         }
-        ImGui::EndTable(); // Fin de la table
+        ImGui::EndTable();
     }
 }
