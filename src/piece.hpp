@@ -6,8 +6,8 @@ class Piece {
 private:
     std::pair<std::string, int> type;
     enum class State {
-        dead,
-        alive,
+        Dead,
+        Alive,
     };
     State state;
     enum class Name {
@@ -18,7 +18,8 @@ private:
         King,
         Pawn
     };
-    Name name;
+    Name                name;
+    std::pair<int, int> position;
 
 public:
     void
