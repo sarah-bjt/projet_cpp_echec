@@ -10,9 +10,19 @@ private:
         alive,
     };
     State state;
+    enum class Name {
+        Rook,
+        Knight,
+        Bishop,
+        Queen,
+        King,
+        Pawn
+    };
+    Name name;
 
 public:
-    void                             move(const std::pair<int, int>& newPosition); // Déplace la pièce
+    void
+                                     move(const std::pair<int, int>& newPosition); // Déplace la pièce
     std::vector<std::pair<int, int>> possible_moves() const;                       // Retourne les déplacements possibles
     std::pair<int, int>              get_position() const;                         // Récupère la position actuelle
     std::string                      get_type() const;                             // Récupère le type de la pièce
@@ -20,5 +30,5 @@ public:
     void                             set_state(State newState);                    // Modifie l'état de la pièce
 
     // constructor
-    Piece(const std::string& name, int value, const std::pair<int, int>& startPosition);
+    Piece(const std::string& name, int color, const std::pair<int, int>& startPosition);
 };
