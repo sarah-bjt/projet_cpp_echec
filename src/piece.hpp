@@ -4,13 +4,13 @@
 
 class Piece {
 private:
-    std::pair<std::string, int> type;
-    enum class State {
+    std::pair<std::string, std::string> type;
+    enum class State : uint8_t {
         Dead,
         Alive,
     };
     State state;
-    enum class Name {
+    enum class Name : uint8_t {
         Rook,
         Knight,
         Bishop,
@@ -18,6 +18,11 @@ private:
         King,
         Pawn
     };
+    enum class Color : uint8_t {
+        Black,
+        White
+    };
+    Color               color;
     Name                name;
     std::pair<int, int> position;
 
@@ -31,5 +36,5 @@ public:
     void                             set_state(State newState);                     // Modifie l'état de la pièce
 
     // constructor
-    Piece(const std::string& name, int color, const std::pair<int, int>& startPosition);
+    Piece(const std::string& name, const std::string& color, const std::pair<int, int>& startPosition);
 };
