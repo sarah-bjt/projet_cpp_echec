@@ -4,12 +4,12 @@
 
 class ChessBoard {
 private:
-    std::vector<Piece*> board;
+    std::vector<Piece*> board; // Tableau 1D de 64 cases
 
 public:
-    ChessBoard() : board(64, nullptr) {}
+    ChessBoard()
+        : board(64, nullptr) {} // Initialise un échiquier vide
 
-    int position_to_index(int x, int y) const {
-        return y * 8 + x;
-    }
+    // Convertit (x, y) en index 1D
+    int position_to_index(int x, int y) const
 }
