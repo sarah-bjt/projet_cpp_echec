@@ -10,6 +10,5 @@ public:
     ChessBoard()
         : board(64, nullptr) {} // Initialise un échiquier vide
 
-    // Convertit (x, y) en index 1D
-    int position_to_index(int x, int y) const
-}
+    int position_to_index(int x, int y) const;
+};
