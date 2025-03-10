@@ -1,8 +1,9 @@
 #include "boardSarah.hpp"
 #include <imgui.h>
 #include <iostream>
-#include "quick_imgui/quick_imgui.hpp"
 #include "piece.hpp"
+#include "quick_imgui/quick_imgui.hpp"
+
 
 // void Board_sarah::draw_table()
 // {
@@ -35,11 +36,14 @@
 //     }
 // }
 
-std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces) {
+std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces)
+{
     std::vector<Piece> alive_pieces;
 
-    for (const auto& piece : pieces) {
-        if (piece.get_state() == Piece::State::Alive) {
+    for (const auto& piece : pieces)
+    {
+        if (piece.get_state() == Piece::State::Alive)
+        {
             alive_pieces.push_back(piece);
         }
     }
@@ -47,9 +51,8 @@ std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces) {
     return alive_pieces;
 }
 
-
-
-void Board_sarah::draw_table(Board_sarah& board) {
+void Board_sarah::draw_table(Board_sarah& board)
+{
     const int columns = 8;
     const int rows    = 8;
 
@@ -57,14 +60,16 @@ void Board_sarah::draw_table(Board_sarah& board) {
 
     if (ImGui::BeginTable("ChessBoard", columns, ImGuiTableFlags_Borders))
     {
-        for (int row = 0; row < rows; ++row) {
+        for (int row = 0; row < rows; ++row)
+        {
             ImGui::TableNextRow(); // Ajoute une nouvelle rangée
-            for (int column = 0; column < columns; ++column) {
+            for (int column = 0; column < columns; ++column)
+            {
                 ImGui::TableSetColumnIndex(column); // Positionne sur la bonne colonne
 
                 // Alterne les couleurs des cases
-                bool is_black = (row + column) % 2 == 0;
-                ImVec4 color = is_black ? ImVec4(0.2f, 0.2f, 0.2f, 1.0f) : ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+                bool   is_black     = (row + column) % 2 == 0;
+                ImVec4 color        = is_black ? ImVec4(0.2f, 0.2f, 0.2f, 1.0f) : ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
                 ImVec4 color_active = ImVec4(0.1f, 0.2f, 0.2f, 1.0f);
 
                 ImGui::PushStyleColor(ImGuiCol_Button, color);
@@ -73,19 +78,24 @@ void Board_sarah::draw_table(Board_sarah& board) {
 
                 // Gérer les pièces : afficher la pièce à sa position
                 bool piece_found = false;
-                for (const auto& piece : board.pieces) {
-                    if (piece.get_position().first == row && piece.get_position().second == column) {
+                for (const auto& piece : board.pieces)
+                {
+                    if (piece.get_position().first == row && piece.get_position().second == column)
+                    {
                         // Afficher la pièce sous forme de texte ou d'image
                         ImGui::Button(piece.get_type().c_str(), ImVec2{50.f, 50.f});
                         // Sélectionner la pièce
-                        if (selected_piece == nullptr) {
+                        if (selected_piece == nullptr)
+                        {
                             selected_piece = &piece;
                         }
-                        else {
-                            if (std::find(piece.possible_moves().begin(), piece.possible_moves().end(), std::make_pair(row, column)) != piece.possible_moves().end()) {
+                        else
+                        {
+                            if (std::find(piece.possible_moves().begin(), piece.possible_moves().end(), std::make_pair(row, column)) != piece.possible_moves().end())
+                            {
                                 piece.move({row, column});
                             }
-                            selected_piece = nullptr;  // Désélectionner la pièce
+                            selected_piece = nullptr; // Désélectionner la pièce
                         }
                         piece_found = true;
                         break;
@@ -93,7 +103,8 @@ void Board_sarah::draw_table(Board_sarah& board) {
                 }
 
                 // Si aucune pièce n'est présente, afficher un bouton vide
-                if (!piece_found) {
+                if (!piece_found)
+                {
                     ImGui::Button("##id", ImVec2{50.f, 50.f});
                 }
 
@@ -136,3 +147,5 @@ Board_sarah::Board_sarah()
         board[6][i] = new Piece("Pawn", "Black", {6, i});
     }
 }
+
+// ceci est un test pout git
