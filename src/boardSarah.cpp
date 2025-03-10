@@ -91,3 +91,36 @@ void Board_sarah::draw_table() {
         ImGui::EndTable();
     }
 }
+
+Board_sarah::Board_sarah()
+{
+    board.resize(8, std::vector<Piece*>(8, nullptr));
+
+    // Placer les pièces blanches
+    board[0][0] = new Piece("Rook", "White", {0, 0});
+    board[0][1] = new Piece("Knight", "White", {0, 1});
+    board[0][2] = new Piece("Bishop", "White", {0, 2});
+    board[0][3] = new Piece("Queen", "White", {0, 3});
+    board[0][4] = new Piece("King", "White", {0, 4});
+    board[0][5] = new Piece("Bishop", "White", {0, 5});
+    board[0][6] = new Piece("Knight", "White", {0, 6});
+    board[0][7] = new Piece("Rook", "White", {0, 7});
+    for (int i = 0; i < 8; i++)
+    {
+        board[1][i] = new Piece("Pawn", "White", {1, i});
+    }
+
+    // Placer les pièces noires
+    board[7][0] = new Piece("Rook", "Black", {7, 0});
+    board[7][1] = new Piece("Knight", "Black", {7, 1});
+    board[7][2] = new Piece("Bishop", "Black", {7, 2});
+    board[7][3] = new Piece("Queen", "Black", {7, 3});
+    board[7][4] = new Piece("King", "Black", {7, 4});
+    board[7][5] = new Piece("Bishop", "Black", {7, 5});
+    board[7][6] = new Piece("Knight", "Black", {7, 6});
+    board[7][7] = new Piece("Rook", "Black", {7, 7});
+    for (int i = 0; i < 8; i++)
+    {
+        board[6][i] = new Piece("Pawn", "Black", {6, i});
+    }
+}
