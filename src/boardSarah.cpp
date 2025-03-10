@@ -49,9 +49,11 @@ std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces) {
 
 
 
-void Board_sarah::draw_table() {
+void Board_sarah::draw_table(Board_sarah& board) {
     const int columns = 8;
     const int rows    = 8;
+
+    static Piece* selected_piece = nullptr;
 
     if (ImGui::BeginTable("ChessBoard", columns, ImGuiTableFlags_Borders))
     {
@@ -71,10 +73,20 @@ void Board_sarah::draw_table() {
 
                 // Gérer les pièces : afficher la pièce à sa position
                 bool piece_found = false;
-                for (const auto& piece : pieces) {
+                for (const auto& piece : board.pieces) {
                     if (piece.get_position().first == row && piece.get_position().second == column) {
                         // Afficher la pièce sous forme de texte ou d'image
                         ImGui::Button(piece.get_type().c_str(), ImVec2{50.f, 50.f});
+                        // Sélectionner la pièce
+                        if (selected_piece == nullptr) {
+                            selected_piece = &piece;
+                        }
+                        else {
+                            if (std::find(piece.possible_moves().begin(), piece.possible_moves().end(), std::make_pair(row, column)) != piece.possible_moves().end()) {
+                                piece.move({row, column});
+                            }
+                            selected_piece = nullptr;  // Désélectionner la pièce
+                        }
                         piece_found = true;
                         break;
                     }
