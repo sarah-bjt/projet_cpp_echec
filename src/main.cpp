@@ -14,14 +14,23 @@ int main()
         /* loop: */
         [&]() {
             ImGui::ShowDemoWindow(); // This opens a window which shows tons of examples of what you can do with ImGui. You should check it out! Also, you can use the "Item Picker" in the top menu of that demo window: then click on any widget and it will show you the corresponding code directly in your IDE!
-
+                
             ImGui::Begin("Sarah"); // Fait apparaitre le board version Sarah ---------------------------------------------
-            Board_sarah::draw_table();
+            // Board_sarah::draw_table();
+            // ImGui::End();
+
+            Board_sarah board;
+            for(int i={0}; i < 8; i++) {
+                board.pieces.push_back(Piece("Pawn", "White", {1, i})); // Pion blanc
+            }
+            for(int i={0}; i < 8; i++) {
+                board.pieces.push_back(Piece("Pawn", "Black", {6, i})); // Pion noir
+            }
+
+            board.draw_table(board);
             ImGui::End();
 
             ImGui::Begin("Example");
-
-            BoardGwat::CreateBoard(8);
 
             // ImGui::SliderFloat("My Value", &value, 0.f, 3.f);
 

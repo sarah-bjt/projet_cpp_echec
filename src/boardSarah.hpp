@@ -21,6 +21,6 @@ private:
     std::vector<std::vector<Piece*>> board; // Échiquier 8x8 contenant des pointeurs vers les pièces
 
 public:
-    static void draw_table();
+    static void draw_table(Board_sarah& board);
     std::vector<Piece> pieces;
 };
