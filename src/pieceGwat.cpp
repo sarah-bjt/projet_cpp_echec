@@ -59,11 +59,21 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const {
     switch (name) {
         case Name::Pawn:
             if (color == Color::White) {
-                if (y == 1 && y + 2 < 8) possible_moves.push_back({x, y + 2});
-                if (y + 1 < 8) possible_moves.push_back({x, y + 1});
-            } else {
-                if (y == 6 && y - 2 >= 0) possible_moves.push_back({x, y - 2});
-                if (y - 1 >= 0) possible_moves.push_back({x, y - 1});
+                // Pion blanc : peut avancer de 1 ou 2 cases si en position initiale
+                if (y == 1 && y + 2 < 8) {
+                    possible_moves.push_back({x, y + 2});
+                }
+                if (y + 1 < 8) {
+                    possible_moves.push_back({x, y + 1});
+                }
+            } else {  // Pion noir
+                // Pion noir : peut avancer de 1 ou 2 cases si en position initiale
+                if (y == 6 && y - 2 >= 0) {
+                    possible_moves.push_back({x, y - 2});
+                }
+                if (y - 1 >= 0) {
+                    possible_moves.push_back({x, y - 1});
+                }
             }
             break;
 
@@ -84,6 +94,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const {
 
     return possible_moves;
 }
+
 
 
 void Piece::move(const std::pair<int, int>& newPosition) {
