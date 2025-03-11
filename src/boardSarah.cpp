@@ -35,32 +35,45 @@
 //     }
 // }
 
-std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces) {
-    std::vector<Piece> alive_pieces;
+#include "boardSarah.hpp"
+#include <imgui.h>
+#include <iostream>
+#include "quick_imgui/quick_imgui.hpp"
+#include "piece.hpp"
 
-    for (const auto& piece : pieces) {
-        if (piece.get_state() == Piece::State::Alive) {
-            alive_pieces.push_back(piece);
-        }
-    }
+// Fonction pour récupérer les pièces vivantes
+// std::vector<Piece> alive_pieces(const std::vector<Piece>& pieces) {
+//     std::vector<Piece> alive_pieces;
+//     for (const auto& piece : pieces) {
+//         if (piece.get_state() == Piece::State::Alive) {
+//             alive_pieces.push_back(piece);
+//         }
+//     }
+//     return alive_pieces;
+// }
 
-    return alive_pieces;
-}
-
-
-
+// Méthode pour dessiner le tableau de jeu
 void Board_sarah::draw_table(Board_sarah& board) {
     const int columns = 8;
-    const int rows    = 8;
+    const int rows = 8;
 
     static Piece* selected_piece = nullptr;
 
-    if (ImGui::BeginTable("ChessBoard", columns, ImGuiTableFlags_Borders))
-    {
+    // Initialisation des pièces si ce n'est pas déjà fait
+    if (board.pieces.empty()) {
+        for (int i = 0; i < 8; i++) {
+            board.pieces.push_back(Piece("Pawn", "White", {1, i}));  // Pions blancs
+            board.pieces.push_back(Piece("Pawn", "Black", {6, i}));  // Pions noirs
+        }
+    }
+
+    // Démarre le tableau ImGui
+    if (ImGui::BeginTable("ChessBoard", columns, ImGuiTableFlags_Borders)) {
         for (int row = 0; row < rows; ++row) {
-            ImGui::TableNextRow(); // Ajoute une nouvelle rangée
+            ImGui::TableNextRow();  // Crée une nouvelle ligne
+
             for (int column = 0; column < columns; ++column) {
-                ImGui::TableSetColumnIndex(column); // Positionne sur la bonne colonne
+                ImGui::TableSetColumnIndex(column);  // Positionne sur la bonne colonne
 
                 // Alterne les couleurs des cases
                 bool is_black = (row + column) % 2 == 0;
@@ -71,21 +84,24 @@ void Board_sarah::draw_table(Board_sarah& board) {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, color_active);
 
-                // Gérer les pièces : afficher la pièce à sa position
+                // Vérifie si une pièce se trouve à cette position
                 bool piece_found = false;
-                for (const auto& piece : board.pieces) {
+                for (auto& piece : board.pieces) {
                     if (piece.get_position().first == row && piece.get_position().second == column) {
-                        // Afficher la pièce sous forme de texte ou d'image
-                        ImGui::Button(piece.get_type().c_str(), ImVec2{50.f, 50.f});
-                        // Sélectionner la pièce
-                        if (selected_piece == nullptr) {
-                            selected_piece = &piece;
-                        }
-                        else {
-                            if (std::find(piece.possible_moves().begin(), piece.possible_moves().end(), std::make_pair(row, column)) != piece.possible_moves().end()) {
-                                piece.move({row, column});
+                        // Affiche la pièce sous forme de texte (ou d'image si nécessaire)
+                        if (ImGui::Button(piece.get_type().c_str(), ImVec2{50.f, 50.f})) {
+                            if (selected_piece == nullptr) {
+                                // Sélectionne la pièce si aucune autre n'est sélectionnée
+                                selected_piece = &piece;
+                            } else {
+                                // Si une pièce est sélectionnée, essaye de déplacer cette pièce
+                                auto possible_moves = selected_piece->possible_moves();
+                                if (std::find(possible_moves.begin(), possible_moves.end(), std::make_pair(row, column)) != possible_moves.end()) {
+                                    // Déplace la pièce si le mouvement est valide
+                                    selected_piece->move({row, column});
+                                }
+                                selected_piece = nullptr; // Désélectionne la pièce après le mouvement
                             }
-                            selected_piece = nullptr;  // Désélectionner la pièce
                         }
                         piece_found = true;
                         break;
@@ -97,9 +113,10 @@ void Board_sarah::draw_table(Board_sarah& board) {
                     ImGui::Button("##id", ImVec2{50.f, 50.f});
                 }
 
-                ImGui::PopStyleColor(3);
+                ImGui::PopStyleColor(3);  // Restaure les couleurs d'origine
             }
         }
         ImGui::EndTable();
     }
 }
+
