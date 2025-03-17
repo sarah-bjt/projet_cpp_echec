@@ -183,17 +183,30 @@ void Board::render()
 }
 
 // Fonction pour déplacer une pièce d'une case à une autre
+// Fonction pour déplacer une pièce d'une case à une autre
 bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to)
 {
     Piece* piece = grid[from.first][from.second];
     if (piece == nullptr)
         return false;
 
-    piece->move(to); // Appel de la méthode move de la classe Piece
-    grid[to.first][to.second]     = piece;
-    grid[from.first][from.second] = nullptr;
-    return true;
+    // Vérifier si le mouvement est valide via la méthode move de la pièce
+    std::vector<std::pair<int, int>> moves = piece->possible_moves();
+    if (std::find(moves.begin(), moves.end(), to) == moves.end())
+    {
+        std::cout << "Mouvement invalide pour " << piece->get_type()
+                  << " de (" << from.first << "," << from.second << ")"
+                  << " à (" << to.first << "," << to.second << ")" << std::endl;
+        return false;  // Mouvement invalide
+    }
+
+    // Si le mouvement est valide, procéder au déplacement
+    piece->move(to); // Effectuer le mouvement dans la pièce
+    grid[to.first][to.second] = piece;     // Mettre à jour la grille
+    grid[from.first][from.second] = nullptr;  // Libérer la case d'origine
+    return true;  // Mouvement valide, on a effectué le déplacement
 }
+
 
 
 // Informe si une pièce est présente sur une case donnée
