@@ -13,20 +13,28 @@ Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std:
 // Convertir une string en Name
 Piece::Name Piece::stringToName(const std::string& nameStr)
 {
-    if (nameStr == "Rook") return Name::Rook;
-    if (nameStr == "Knight") return Name::Knight;
-    if (nameStr == "Bishop") return Name::Bishop;
-    if (nameStr == "Queen") return Name::Queen;
-    if (nameStr == "King") return Name::King;
-    if (nameStr == "Pawn") return Name::Pawn;
+    if (nameStr == "Rook")
+        return Name::Rook;
+    if (nameStr == "Knight")
+        return Name::Knight;
+    if (nameStr == "Bishop")
+        return Name::Bishop;
+    if (nameStr == "Queen")
+        return Name::Queen;
+    if (nameStr == "King")
+        return Name::King;
+    if (nameStr == "Pawn")
+        return Name::Pawn;
     throw std::invalid_argument("Nom de pièce invalide !");
 }
 
 // Convertir une string en Color
 Piece::Color Piece::stringToColor(const std::string& colorStr)
 {
-    if (colorStr == "White") return Color::White;
-    if (colorStr == "Black") return Color::Black;
+    if (colorStr == "White")
+        return Color::White;
+    if (colorStr == "Black")
+        return Color::Black;
     throw std::invalid_argument("Couleur invalide !");
 }
 
@@ -72,7 +80,7 @@ bool Piece::is_empty(const std::pair<int, int>& pos, const std::vector<std::vect
 std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::vector<Piece*>>& board) const
 {
     std::vector<std::pair<int, int>> possible_moves;
-    int x = position.first, y = position.second;
+    int                              x = position.first, y = position.second;
 
     switch (name)
     {
@@ -116,7 +124,8 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             for (int i = 1; i < 8; i++)
             {
                 int newX = x + i * dx, newY = y + i * dy;
-                if (newX < 0 || newX >= 8 || newY < 0 || newY >= 8) break;
+                if (newX < 0 || newX >= 8 || newY < 0 || newY >= 8)
+                    break;
                 if (is_empty({newX, newY}, board))
                     possible_moves.push_back({newX, newY});
                 else
@@ -133,7 +142,8 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
     case Name::Knight:
     {
         for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
-                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}})
+                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+             })
         {
             int newX = x + dx, newY = y + dy;
             if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (is_empty({newX, newY}, board) || is_enemy({newX, newY}, board)))
@@ -145,7 +155,8 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
     case Name::King:
     {
         for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
-                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}})
+                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+             })
         {
             int newX = x + dx, newY = y + dy;
             if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (is_empty({newX, newY}, board) || is_enemy({newX, newY}, board)))
@@ -157,7 +168,6 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
 
     return possible_moves;
 }
-
 
 void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector<Piece*>>& board)
 {
@@ -173,8 +183,8 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         }
 
         // Déplacer la pièce sur l'échiquier
-        board[position.first][position.second] = nullptr; // Libérer l'ancienne case
-        position = newPosition;
+        board[position.first][position.second]       = nullptr; // Libérer l'ancienne case
+        position                                     = newPosition;
         board[newPosition.first][newPosition.second] = this; // Nouvelle position
 
         std::cout << get_type() << " se déplace en (" << newPosition.first << ", " << newPosition.second << ")." << std::endl;
@@ -185,4 +195,5 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
     }
 }
 
-//Blah blah c'est pour le push
+// Blah blah c'est pour le push
+//  pipipopo
