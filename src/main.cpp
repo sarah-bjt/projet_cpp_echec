@@ -1,11 +1,10 @@
 #include <imgui.h>
 #include <iostream>
 #include "quick_imgui/quick_imgui.hpp"
-#include "boardGwat.hpp"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL headers
-#include "boardGwat.hpp"
+#include "board.hpp"
 
 GLFWwindow* window;
 

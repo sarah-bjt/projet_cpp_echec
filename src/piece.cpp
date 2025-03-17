@@ -84,30 +84,78 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
 
     switch (name)
     {
-    case Name::Pawn:
-        if (color == Color::White)
+        case Name::Pawn:
         {
-            if (y + 1 < 8 && is_empty({x, y + 1}, board))
-                possible_moves.push_back({x, y + 1});
-            if (y == 1 && is_empty({x, y + 2}, board) && is_empty({x, y + 1}, board))
-                possible_moves.push_back({x, y + 2});
-            if (x - 1 >= 0 && y + 1 < 8 && is_enemy({x - 1, y + 1}, board))
-                possible_moves.push_back({x - 1, y + 1});
-            if (x + 1 < 8 && y + 1 < 8 && is_enemy({x + 1, y + 1}, board))
-                possible_moves.push_back({x + 1, y + 1});
+            if (color == Color::White)
+            {
+                // Déplacement d'une case en avant
+                if (y + 1 < 8 && is_empty({x, y + 1}, board))
+                    possible_moves.push_back({x, y + 1});
+                
+                // Mouvement de deux cases (si c'est le premier mouvement du pion)
+                if (y == 1 && is_empty({x, y + 2}, board) && is_empty({x, y + 1}, board))
+                    possible_moves.push_back({x, y + 2});
+                
+                // Capture en diagonale (vers la droite et la gauche)
+                if (x - 1 >= 0 && y + 1 < 8 && is_enemy({x - 1, y + 1}, board))
+                    possible_moves.push_back({x - 1, y + 1});
+                if (x + 1 < 8 && y + 1 < 8 && is_enemy({x + 1, y + 1}, board))
+                    possible_moves.push_back({x + 1, y + 1});
+            
+                // Promotion si le pion atteint la dernière ligne
+                if (y == 6) {
+                    // Le pion atteint la dernière ligne (promotion possible)
+                    std::cout << "Le pion blanc atteint la dernière ligne et peut être promu !" << std::endl;
+                    // Ajoutez ici la logique pour effectuer la promotion du pion.
+                }
+            
+                // Prise en passant (si un pion adverse a bougé de deux cases)
+                if (y == 4) {
+                    // Vérification des pions adverses qui se trouvent sur la même ligne
+                    if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y + 1}, board)) {
+                        possible_moves.push_back({x - 1, y + 1});
+                    }
+                    if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y + 1}, board)) {
+                        possible_moves.push_back({x + 1, y + 1});
+                    }
+                }
+            }
+            else
+            {
+                // Déplacement d'une case en avant
+                if (y - 1 >= 0 && is_empty({x, y - 1}, board))
+                    possible_moves.push_back({x, y - 1});
+                
+                // Mouvement de deux cases (si c'est le premier mouvement du pion)
+                if (y == 6 && is_empty({x, y - 2}, board) && is_empty({x, y - 1}, board))
+                    possible_moves.push_back({x, y - 2});
+                
+                // Capture en diagonale (vers la droite et la gauche)
+                if (x - 1 >= 0 && y - 1 >= 0 && is_enemy({x - 1, y - 1}, board))
+                    possible_moves.push_back({x - 1, y - 1});
+                if (x + 1 < 8 && y - 1 >= 0 && is_enemy({x + 1, y - 1}, board))
+                    possible_moves.push_back({x + 1, y - 1});
+            
+                // Promotion si le pion atteint la dernière ligne
+                if (y == 1) {
+                    // Le pion atteint la dernière ligne (promotion possible)
+                    std::cout << "Le pion noir atteint la dernière ligne et peut être promu !" << std::endl;
+                    // Ajoutez ici la logique pour effectuer la promotion du pion.
+                }
+            
+                // Prise en passant (si un pion adverse a bougé de deux cases)
+                if (y == 3) {
+                    // Vérification des pions adverses qui se trouvent sur la même ligne
+                    if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y - 1}, board)) {
+                        possible_moves.push_back({x - 1, y - 1});
+                    }
+                    if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y - 1}, board)) {
+                        possible_moves.push_back({x + 1, y - 1});
+                    }
+                }
+            }
         }
-        else
-        {
-            if (y - 1 >= 0 && is_empty({x, y - 1}, board))
-                possible_moves.push_back({x, y - 1});
-            if (y == 6 && is_empty({x, y - 2}, board) && is_empty({x, y - 1}, board))
-                possible_moves.push_back({x, y - 2});
-            if (x - 1 >= 0 && y - 1 >= 0 && is_enemy({x - 1, y - 1}, board))
-                possible_moves.push_back({x - 1, y - 1});
-            if (x + 1 < 8 && y - 1 >= 0 && is_enemy({x + 1, y - 1}, board))
-                possible_moves.push_back({x + 1, y - 1});
-        }
-        break;
+        
 
     case Name::Bishop:
     case Name::Rook:
