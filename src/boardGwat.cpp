@@ -147,7 +147,7 @@ void Board::render()
         if (piece != nullptr)
         {
             // Obtenir les mouvements possibles de la pièce
-            std::vector<std::pair<int, int>> moves = piece->possible_moves();
+            std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
 
             std::cout << "Mouvements possibles pour la pièce sélectionnée: (" << selected_pos.first << ", " << selected_pos.second << ")\n";
 
@@ -190,7 +190,7 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         return false;
 
     // Vérifier si le mouvement est valide via la méthode move de la pièce
-    std::vector<std::pair<int, int>> moves = piece->possible_moves();
+    std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
     if (std::find(moves.begin(), moves.end(), to) == moves.end())
     {
         std::cout << "Mouvement invalide pour " << piece->get_type()
@@ -200,7 +200,7 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     }
 
     // Si le mouvement est valide, procéder au déplacement
-    piece->move(to); // Effectuer le mouvement dans la pièce
+    piece->move(to, grid); // Effectuer le mouvement dans la pièce
     grid[to.first][to.second] = piece;     // Mettre à jour la grille
     grid[from.first][from.second] = nullptr;  // Libérer la case d'origine
     return true;  // Mouvement valide, on a effectué le déplacement

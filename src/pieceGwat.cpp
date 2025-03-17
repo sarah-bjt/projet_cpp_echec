@@ -13,28 +13,20 @@ Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std:
 // Convertir une string en Name
 Piece::Name Piece::stringToName(const std::string& nameStr)
 {
-    if (nameStr == "Rook")
-        return Name::Rook;
-    if (nameStr == "Knight")
-        return Name::Knight;
-    if (nameStr == "Bishop")
-        return Name::Bishop;
-    if (nameStr == "Queen")
-        return Name::Queen;
-    if (nameStr == "King")
-        return Name::King;
-    if (nameStr == "Pawn")
-        return Name::Pawn;
+    if (nameStr == "Rook") return Name::Rook;
+    if (nameStr == "Knight") return Name::Knight;
+    if (nameStr == "Bishop") return Name::Bishop;
+    if (nameStr == "Queen") return Name::Queen;
+    if (nameStr == "King") return Name::King;
+    if (nameStr == "Pawn") return Name::Pawn;
     throw std::invalid_argument("Nom de pièce invalide !");
 }
 
 // Convertir une string en Color
 Piece::Color Piece::stringToColor(const std::string& colorStr)
 {
-    if (colorStr == "White")
-        return Color::White;
-    if (colorStr == "Black")
-        return Color::Black;
+    if (colorStr == "White") return Color::White;
+    if (colorStr == "Black") return Color::Black;
     throw std::invalid_argument("Couleur invalide !");
 }
 
@@ -63,185 +55,132 @@ std::string Piece::get_type() const
     return (color == Color::White ? "White " : "Black ") + nameStr;
 }
 
-std::vector<std::pair<int, int>> Piece::possible_moves() const
+// Vérifier si une case contient une pièce adverse
+bool Piece::is_enemy(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const
+{
+    Piece* target = board[pos.first][pos.second];
+    return target && target->color != color;
+}
+
+// Vérifier si une case est vide
+bool Piece::is_empty(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const
+{
+    return board[pos.first][pos.second] == nullptr;
+}
+
+// Générer les mouvements possibles
+std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::vector<Piece*>>& board) const
 {
     std::vector<std::pair<int, int>> possible_moves;
-    int                              x = position.first;
-    int                              y = position.second;
+    int x = position.first, y = position.second;
 
     switch (name)
     {
     case Name::Pawn:
         if (color == Color::White)
         {
-            // Pion blanc : peut avancer de 1 ou 2 cases si en position initiale
-            if (y == 1 && y + 2 < 8)
-            {
-                possible_moves.push_back({x, y + 2});
-            }
-            if (y + 1 < 8)
-            {
+            if (y + 1 < 8 && is_empty({x, y + 1}, board))
                 possible_moves.push_back({x, y + 1});
-            }
+            if (y == 1 && is_empty({x, y + 2}, board) && is_empty({x, y + 1}, board))
+                possible_moves.push_back({x, y + 2});
+            if (x - 1 >= 0 && y + 1 < 8 && is_enemy({x - 1, y + 1}, board))
+                possible_moves.push_back({x - 1, y + 1});
+            if (x + 1 < 8 && y + 1 < 8 && is_enemy({x + 1, y + 1}, board))
+                possible_moves.push_back({x + 1, y + 1});
         }
         else
-        { // Pion noir
-            // Pion noir : peut avancer de 1 ou 2 cases si en position initiale
-            if (y == 6 && y - 2 >= 0)
-            {
-                possible_moves.push_back({x, y - 2});
-            }
-            if (y - 1 >= 0)
-            {
+        {
+            if (y - 1 >= 0 && is_empty({x, y - 1}, board))
                 possible_moves.push_back({x, y - 1});
-            }
+            if (y == 6 && is_empty({x, y - 2}, board) && is_empty({x, y - 1}, board))
+                possible_moves.push_back({x, y - 2});
+            if (x - 1 >= 0 && y - 1 >= 0 && is_enemy({x - 1, y - 1}, board))
+                possible_moves.push_back({x - 1, y - 1});
+            if (x + 1 < 8 && y - 1 >= 0 && is_enemy({x + 1, y - 1}, board))
+                possible_moves.push_back({x + 1, y - 1});
         }
         break;
-    
+
     case Name::Bishop:
-        for (int i = 1; i < 8; i++) {
-            if (x - i >= 0 && y + i < 8) possible_moves.push_back({x - i, y + i});
-            if (x - i >= 0 && y - i >= 0) possible_moves.push_back({x - i, y - i});
-            if (x + i < 8 && y + i < 8) possible_moves.push_back({x + i, y + i});
-            if (x + i < 8 && y - i >= 0) possible_moves.push_back({x + i, y - i});
-        }
-        break;
-
-    case Name::Knight:
-        for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
-                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
-             })
-        {
-            int newX = x + dx, newY = y + dy;
-            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8)
-                possible_moves.push_back({newX, newY});
-        }
-        break;
-
     case Name::Rook:
-    {
-        // Vers la droite
-        for (int i = x + 1; i < 8; i++)
-        {
-            possible_moves.push_back({i, y});
-        }
-
-        // Vers la gauche
-        for (int i = x - 1; i >= 0; i--)
-        {
-            possible_moves.push_back({i, y});
-        }
-
-        // Vers le haut
-        for (int i = y + 1; i < 8; i++)
-        {
-            possible_moves.push_back({x, i});
-        }
-
-        // Vers le bas
-        for (int i = y - 1; i >= 0; i--)
-        {
-            possible_moves.push_back({x, i});
-        }
-        break;
-    }
-
     case Name::Queen:
     {
-        // Vers la droite
-        for (int i = x + 1; i < 8; i++)
-        {
-            possible_moves.push_back({i, y});
-        }
-
-        // Vers la gauche
-        for (int i = x - 1; i >= 0; i--)
-        {
-            possible_moves.push_back({i, y});
-        }
-
-        // Vers le haut
-        for (int i = y + 1; i < 8; i++)
-        {
-            possible_moves.push_back({x, i});
-        }
-
-        // Vers le bas
-        for (int i = y - 1; i >= 0; i--)
-        {
-            possible_moves.push_back({x, i});
-        }
-
-        // Diagonale haut-droite
-        for (int i = 1; x + i < 8 && y + i < 8; i++)
-        {
-            possible_moves.push_back({x + i, y + i});
-        }
-
-        // Diagonale bas-droite
-        for (int i = 1; x + i < 8 && y - i >= 0; i++)
-        {
-            possible_moves.push_back({x + i, y - i});
-        }
-
-        // Diagonale haut-gauche
-        for (int i = 1; x - i >= 0 && y + i < 8; i++)
-        {
-            possible_moves.push_back({x - i, y + i});
-        }
-
-        // Diagonale bas-gauche
-        for (int i = 1; x - i >= 0 && y - i >= 0; i++)
-        {
-            possible_moves.push_back({x - i, y - i});
-        }
-        break;
-
-    case Name::King:
-    {
-        // Déplacements possibles du roi (une case dans toutes les directions)
-        std::vector<std::pair<int, int>> directions = {
-            {1, 0},  // Droite
-            {-1, 0}, // Gauche
-            {0, 1},  // Haut
-            {0, -1}, // Bas
-            {1, 1},  // Diagonale haut-droite
-            {1, -1}, // Diagonale bas-droite
-            {-1, 1}, // Diagonale haut-gauche
-            {-1, -1} // Diagonale bas-gauche
-        };
+        std::vector<std::pair<int, int>> directions;
+        if (name == Name::Bishop || name == Name::Queen)
+            directions = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        if (name == Name::Rook || name == Name::Queen)
+            directions.insert(directions.end(), {{1, 0}, {-1, 0}, {0, 1}, {0, -1}});
 
         for (const auto& [dx, dy] : directions)
         {
-            int newX = x + dx;
-            int newY = y + dy;
-
-            // Vérifier que la case est bien dans les limites de l'échiquier
-            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8)
+            for (int i = 1; i < 8; i++)
             {
-                possible_moves.push_back({newX, newY});
+                int newX = x + i * dx, newY = y + i * dy;
+                if (newX < 0 || newX >= 8 || newY < 0 || newY >= 8) break;
+                if (is_empty({newX, newY}, board))
+                    possible_moves.push_back({newX, newY});
+                else
+                {
+                    if (is_enemy({newX, newY}, board))
+                        possible_moves.push_back({newX, newY});
+                    break;
+                }
             }
         }
-
-        break;
-    }
-    default:
         break;
     }
 
-        return possible_moves;
+    case Name::Knight:
+    {
+        for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
+                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}})
+        {
+            int newX = x + dx, newY = y + dy;
+            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (is_empty({newX, newY}, board) || is_enemy({newX, newY}, board)))
+                possible_moves.push_back({newX, newY});
+        }
+        break;
+    }
+
+    case Name::King:
+    {
+        for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
+                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}})
+        {
+            int newX = x + dx, newY = y + dy;
+            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (is_empty({newX, newY}, board) || is_enemy({newX, newY}, board)))
+                possible_moves.push_back({newX, newY});
+        }
+        break;
+    }
+    }
+
+    return possible_moves;
+}
+
+
+void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector<Piece*>>& board)
+{
+    std::vector<std::pair<int, int>> moves = possible_moves(board);
+
+    if (std::find(moves.begin(), moves.end(), newPosition) != moves.end())
+    {
+        // Capturer une pièce ennemie si présente
+        if (board[newPosition.first][newPosition.second] != nullptr)
+        {
+            delete board[newPosition.first][newPosition.second]; // Suppression de la pièce capturée
+            board[newPosition.first][newPosition.second] = nullptr;
+        }
+
+        // Déplacer la pièce sur l'échiquier
+        board[position.first][position.second] = nullptr; // Libérer l'ancienne case
+        position = newPosition;
+        board[newPosition.first][newPosition.second] = this; // Nouvelle position
+
+        std::cout << get_type() << " se déplace en (" << newPosition.first << ", " << newPosition.second << ")." << std::endl;
+    }
+    else
+    {
+        std::cout << "Déplacement invalide !" << std::endl;
     }
 }
-    void Piece::move(const std::pair<int, int>& newPosition)
-    {
-        std::vector<std::pair<int, int>> moves = possible_moves();
-
-        if (std::find(moves.begin(), moves.end(), newPosition) != moves.end())
-        {
-            position = newPosition;
-        }
-        else
-        {
-            std::cout << "Faux" << std::endl;
-        }
-    }
