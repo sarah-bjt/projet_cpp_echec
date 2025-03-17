@@ -184,3 +184,5 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         std::cout << "Déplacement invalide !" << std::endl;
     }
 }
+
+//Blah blah c'est pour le push
