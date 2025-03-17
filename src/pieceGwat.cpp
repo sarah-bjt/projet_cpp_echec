@@ -49,8 +49,6 @@ std::string Piece::get_type() const {
     return (color == Color::White ? "White " : "Black ") + nameStr;
 }
 
-
-
 std::vector<std::pair<int, int>> Piece::possible_moves() const {
     std::vector<std::pair<int, int>> possible_moves;
     int x = position.first;
@@ -59,21 +57,11 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const {
     switch (name) {
         case Name::Pawn:
             if (color == Color::White) {
-                // Pion blanc : peut avancer de 1 ou 2 cases si en position initiale
-                if (y == 1 && y + 2 < 8) {
-                    possible_moves.push_back({x, y + 2});
-                }
-                if (y + 1 < 8) {
-                    possible_moves.push_back({x, y + 1});
-                }
-            } else {  // Pion noir
-                // Pion noir : peut avancer de 1 ou 2 cases si en position initiale
-                if (y == 6 && y - 2 >= 0) {
-                    possible_moves.push_back({x, y - 2});
-                }
-                if (y - 1 >= 0) {
-                    possible_moves.push_back({x, y - 1});
-                }
+                if (y == 1 && y + 2 < 8) possible_moves.push_back({x, y + 2});
+                if (y + 1 < 8) possible_moves.push_back({x, y + 1});
+            } else {
+                if (y == 6 && y - 2 >= 0) possible_moves.push_back({x, y - 2});
+                if (y - 1 >= 0) possible_moves.push_back({x, y - 1});
             }
             break;
 
@@ -87,6 +75,15 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const {
                     possible_moves.push_back({newX, newY});
             }
             break;
+        
+        case Name::Bishop:
+            for (int i = 1; i < 8; i++) {
+                if (x - i >= 0 && y + i < 8) possible_moves.push_back({x - i, y + i});
+                if (x - i >= 0 && y - i >= 0) possible_moves.push_back({x - i, y - i});
+                if (x + i < 8 && y + i < 8) possible_moves.push_back({x + i, y + i});
+                if (x + i < 8 && y - i >= 0) possible_moves.push_back({x + i, y - i});
+            }
+            break;
 
         default:
             break;
@@ -95,15 +92,15 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const {
     return possible_moves;
 }
 
-
-
 void Piece::move(const std::pair<int, int>& newPosition) {
     std::vector<std::pair<int, int>> moves = possible_moves();
 
-    if(std::find(moves.begin(), moves.end(), newPosition) != moves.end()) {
+    if (std::find(moves.begin(), moves.end(), newPosition) != moves.end()) {
         position = newPosition;
-    }
-    else {
-        std::cout << "Faux" << std::endl;
+    } else {
+        std::cout << "Mouvement invalide pour " << get_type()
+                  << " de (" << position.first << "," << position.second << ")"
+                  << " à (" << newPosition.first << "," << newPosition.second << ")" << std::endl;
     }
 }
+

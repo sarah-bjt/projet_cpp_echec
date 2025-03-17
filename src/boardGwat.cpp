@@ -70,8 +70,11 @@ void Board::placePiece(Piece* piece, int x, int y)
 // Afficher le plateau
 void Board::render()
 {
+    bool piece_clicked = false;
+
+    // 1. Dessiner les cases
     for (int y = 7; y >= 0; --y)
-    { // Inverser l'ordre des lignes : commence par la ligne 7
+    { 
         for (int x = 0; x < 8; ++x)
         {
             ImVec2 pos  = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
@@ -81,57 +84,97 @@ void Board::render()
             ImU32 color = (x + y) % 2 == 0 ? IM_COL32(240, 217, 181, 255) : IM_COL32(119, 148, 85, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
 
-            // Dessiner la pièce si elle existe
-            Piece* piece = grid[x][y];
-            if (piece != nullptr)
+            // Vérifier si la souris survole la case
+            if (ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + square_size, pos.y + square_size)))
             {
-                std::string piece_str = piece->get_type();
-
-                // Vérifier si la souris survole la case
-                if (ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + square_size, pos.y + square_size)))
+                if (ImGui::IsMouseClicked(0))
                 {
-                    ImGui::GetWindowDrawList()->AddRect(pos, ImVec2(pos.x + square_size, pos.y + square_size), IM_COL32(255, 0, 0, 255), 0.0f, ImDrawFlags_None, 2.0f);
-
-                    if (ImGui::IsMouseClicked(0))
+                    if (selected_piece && selected_pos.first == x && selected_pos.second == y)
                     {
-                        selected_piece = true;
-                        selected_pos   = {x, y};
-
-                        // Afficher le message indiquant la case où l'on a cliqué
-                        std::string msg = "Vous avez cliqué sur la case: (" + std::to_string(x) + ", " + std::to_string(y) + ")";
-                        std::cout << msg << std::endl;
+                        // Si on clique sur la même pièce, on la désélectionne
+                        selected_piece = false;
+                        std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
                     }
-                }
-
-                // Afficher la pièce
-                ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + square_size / 4, pos.y + square_size / 4), IM_COL32(0, 0, 0, 255), piece_str.c_str());
-            }
-
-            // Afficher les mouvements possibles de la pièce sélectionnée
-            if (selected_piece && piece != nullptr && selected_pos == std::make_pair(x, y))
-            {
-                std::vector<std::pair<int, int>> moves = piece->possible_moves();
-
-                for (const auto& move : moves)
-                {
-                    // Calculer la position du cercle de mouvement (en tenant compte de l'inversion de y)
-                    ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
-
-                    // Dessiner un cercle vert à la position du mouvement possible
-                    ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 255, 0, 255));
-
-                    // Gérer le clic pour déplacer la pièce
-                    if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size)) && ImGui::IsMouseClicked(0))
+                    else if (selected_piece)
                     {
-                        movePiece(selected_pos, move);
-                        selected_piece = false; // Désélectionner après déplacement
+                        // Si une pièce est sélectionnée, on veut peut-être la déplacer
+                        Piece* piece = grid[selected_pos.first][selected_pos.second];
+                        if (piece != nullptr)
+                        {
+                            // Déplacer la pièce
+                            std::cout << "Déplacement de la pièce: (" << selected_pos.first << ", " << selected_pos.second << ") -> (" << x << ", " << y << ")\n";
+                            movePiece(selected_pos, {x, y});
+                            selected_piece = false;  // Désélectionner après déplacement
+                        }
+                    }
+                    else
+                    {
+                        // Si aucune pièce n'est sélectionnée, on sélectionne la pièce de la case
+                        selected_pos = {x, y};
+                        Piece* piece = grid[selected_pos.first][selected_pos.second];
+                        if (piece != nullptr)
+                        {
+                            std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
+                            selected_piece = true;
+                        }
                     }
                 }
             }
         }
     }
 
-    // Afficher un message en bas indiquant la case sélectionnée
+    // 2. Afficher les pièces après les cases
+    for (int y = 7; y >= 0; --y)
+    {
+        for (int x = 0; x < 8; ++x)
+        {
+            Piece* piece = grid[x][y];
+            if (piece != nullptr)
+            {
+                ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
+                std::string piece_str = piece->get_type();
+
+                // Dessiner la pièce
+                ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + square_size / 4, pos.y + square_size / 4), IM_COL32(0, 0, 0, 255), piece_str.c_str());
+            }
+        }
+    }
+
+    // 3. Afficher les mouvements possibles de la pièce sélectionnée
+    if (selected_piece)
+    {
+        Piece* piece = grid[selected_pos.first][selected_pos.second];
+        if (piece != nullptr)
+        {
+            // Obtenir les mouvements possibles de la pièce
+            std::vector<std::pair<int, int>> moves = piece->possible_moves();
+
+            std::cout << "Mouvements possibles pour la pièce sélectionnée: (" << selected_pos.first << ", " << selected_pos.second << ")\n";
+
+            for (const auto& move : moves)
+            {
+                // Calculer la position du cercle de mouvement (en tenant compte de l'inversion de y)
+                ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
+
+                // Vérifier si une pièce est déjà présente sur la case
+                if (!is_piece_at(move)) // Si la case n'est pas occupée par une pièce
+                {
+                    // Dessiner un cercle vert à la position du mouvement possible
+                    ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 255, 0, 255));
+                }
+
+                // Gérer le clic pour déplacer la pièce
+                if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size)) && ImGui::IsMouseClicked(0))
+                {
+                    std::cout << "Déplacement effectué vers (" << move.first << ", " << move.second << ")\n";
+                    movePiece(selected_pos, move);
+                    selected_piece = false; // Désélectionner après déplacement
+                }
+            }
+        }
+    }
+
+    // 4. Afficher un message en bas indiquant la case sélectionnée
     if (selected_piece)
     {
         std::string msg = "Case sélectionnée : (" + std::to_string(selected_pos.first) + ", " + std::to_string(selected_pos.second) + ")";
@@ -139,7 +182,7 @@ void Board::render()
     }
 }
 
-// Déplacer une pièce d'une position à une autre
+// Fonction pour déplacer une pièce d'une case à une autre
 bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to)
 {
     Piece* piece = grid[from.first][from.second];
@@ -152,7 +195,8 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     return true;
 }
 
-// Informe si une pièce est présente sur une case donné
+
+// Informe si une pièce est présente sur une case donnée
 bool Board::is_piece_at(const std::pair<int, int>& pos)
 {
     return grid[pos.first][pos.second] != nullptr;
