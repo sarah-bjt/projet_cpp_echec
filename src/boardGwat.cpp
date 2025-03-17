@@ -183,7 +183,6 @@ void Board::render()
 }
 
 // Fonction pour déplacer une pièce d'une case à une autre
-// Fonction pour déplacer une pièce d'une case à une autre
 bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to)
 {
     Piece* piece = grid[from.first][from.second];

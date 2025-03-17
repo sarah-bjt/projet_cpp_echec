@@ -97,6 +97,15 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const
             }
         }
         break;
+    
+    case Name::Bishop:
+        for (int i = 1; i < 8; i++) {
+            if (x - i >= 0 && y + i < 8) possible_moves.push_back({x - i, y + i});
+            if (x - i >= 0 && y - i >= 0) possible_moves.push_back({x - i, y - i});
+            if (x + i < 8 && y + i < 8) possible_moves.push_back({x + i, y + i});
+            if (x + i < 8 && y - i >= 0) possible_moves.push_back({x + i, y - i});
+        }
+        break;
 
     case Name::Knight:
         for (const auto& [dx, dy] : std::vector<std::pair<int, int>>{
@@ -222,7 +231,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves() const
 
         return possible_moves;
     }
-
+}
     void Piece::move(const std::pair<int, int>& newPosition)
     {
         std::vector<std::pair<int, int>> moves = possible_moves();
