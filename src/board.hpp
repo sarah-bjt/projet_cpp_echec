@@ -39,6 +39,8 @@ public:
     // Informe si une pièce est présente sur une case donnée
     bool is_piece_at(const std::pair<int, int>& pos);
 
+    bool is_game_over();
+
     // Fonction pour obtenir le label du bouton d'une pièce (ex. "PW", "PN", "RW", "RN", etc.)
     std::string getPieceButtonLabel(const std::string& piece_type, const std::string& color);
 };

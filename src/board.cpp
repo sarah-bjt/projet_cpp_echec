@@ -67,6 +67,39 @@ void Board::placePiece(Piece* piece, int x, int y)
     grid[x][y] = piece;
 }
 
+// bool Board::is_game_over() {
+//     bool whiteKingAlive = false;
+//     bool blackKingAlive = false;
+
+//     for (int y = 0; y < 8; ++y) {
+//         for (int x = 0; x < 8; ++x) {
+//             Piece* piece = grid[x][y];
+//             if (piece != nullptr) {
+//                 if (piece->get_type() == "King") {
+//                     if (piece->get_color() == "White" && piece->get_state() == Piece::State::Alive) {
+//                         whiteKingAlive = true;
+//                     } else if (piece->get_color() == "Black" && piece->get_state() == Piece::State::Alive) {
+//                         blackKingAlive = true;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     // Si l'un des rois est mort, la partie est finie
+//     if (!whiteKingAlive) {
+//         std::cout << "Le roi blanc a été capturé. La partie est terminée." << std::endl;
+//         return true;  // La partie est terminée
+//     }
+//     if (!blackKingAlive) {
+//         std::cout << "Le roi noir a été capturé. La partie est terminée." << std::endl;
+//         return true;  // La partie est terminée
+//     }
+
+//     return false;
+// }
+
+
 // Afficher le plateau
 void Board::render()
 {
