@@ -99,7 +99,6 @@ void Board::placePiece(Piece* piece, int x, int y)
 //     return false;
 // }
 
-
 // Afficher le plateau
 void Board::render()
 {
@@ -207,6 +206,43 @@ void Board::render()
         std::string msg = "Case sélectionnée : (" + std::to_string(selected_pos.first) + ", " + std::to_string(selected_pos.second) + ")";
         ImGui::Text("%s", msg.c_str());
     }
+
+    if (promotion_active)
+    {
+        ImGui::OpenPopup("Promotion");
+    }
+
+    if (ImGui::BeginPopupModal("Promotion", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Choisissez une promotion:");
+
+        if (ImGui::Button("Queen"))
+        {
+            promoted_piece->promote("Queen");
+            promotion_active = false;
+            ImGui::CloseCurrentPopup();
+        }
+        if (ImGui::Button("Rook"))
+        {
+            promoted_piece->promote("Rook");
+            promotion_active = false;
+            ImGui::CloseCurrentPopup();
+        }
+        if (ImGui::Button("Bishop"))
+        {
+            promoted_piece->promote("Bishop");
+            promotion_active = false;
+            ImGui::CloseCurrentPopup();
+        }
+        if (ImGui::Button("Knight"))
+        {
+            promoted_piece->promote("Knight");
+            promotion_active = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 // Fonction pour déplacer une pièce d'une case à une autre
@@ -223,7 +259,7 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         target_piece->set_state(Piece::State::Dead);
         std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
     }
-    
+
     // Vérifier si le mouvement est valide via la méthode move de la pièce
     std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
     if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
@@ -240,6 +276,17 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     grid[from.first][from.second] = nullptr; // Libérer la case d'origine
     // Met à jour la dernière couleur déplacée
     last_moved_piece_color = piece->get_color();
+
+    if ((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (to.second == 0 || to.second == 7))
+    {
+        std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
+        // Activer la promotion
+        promotion_active = true;
+        promotion_pos    = to;
+        promoted_piece   = piece;
+        ImGui::OpenPopup("Promotion");
+        return true; // Ne pas continuer tant que la promotion n'est pas choisie
+    }
     return true; // Mouvement valide, on a effectué le déplacement
 }
 

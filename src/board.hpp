@@ -12,7 +12,12 @@ private:
     float                            square_size    = 50.0f;                       // Taille d'une case en pixels
     bool                             selected_piece = false;                       // Pour savoir si une pièce est sélectionnée
     std::pair<int, int>              selected_pos;                                 // Position de la pièce sélectionnée
-    Piece::Color                     last_moved_piece_color = Piece::Color::Black; // Couleur de la dernière pièce bougé
+    Piece::Color                     last_moved_piece_color = Piece::Color::Black; // Couleur de la dernière pièce bougé, initialisé à noir
+
+    // pour faire la promo d'un pion
+    bool                promotion_active = false; // Indique si la promotion est en cours
+    std::pair<int, int> promotion_pos;            // Position du pion à promouvoir
+    Piece*              promoted_piece = nullptr; // Stocke le pion qui doit être promu
 
 public:
     Board();

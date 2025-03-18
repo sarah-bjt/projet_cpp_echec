@@ -48,6 +48,18 @@ void Piece::set_state(State newState)
     this->state = newState;
 }
 
+void Piece::promote(std::string newType)
+{
+    if (newType == "Queen")
+        name = Name::Queen;
+    else if (newType == "Rook")
+        name = Name::Rook;
+    else if (newType == "Bishop")
+        name = Name::Bishop;
+    else if (newType == "Knight")
+        name = Name::Knight;
+}
+
 Piece::Color Piece::get_color() const
 {
     return color;
@@ -260,4 +272,4 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
     }
 }
 
-//Poupoupilou
+// Poupoupilou
