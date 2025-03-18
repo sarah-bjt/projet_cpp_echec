@@ -43,4 +43,5 @@ class Piece {
         void set_state(State newState);
         bool is_enemy(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
         bool is_empty(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
-    };
+        std::string get_color() const;
+};

@@ -83,43 +83,6 @@ void Board::render()
             // Dessiner les cases
             ImU32 color = (x + y) % 2 == 0 ? IM_COL32(240, 217, 181, 255) : IM_COL32(119, 148, 85, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
-
-            // Vérifier si la souris survole la case
-            if (ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + square_size, pos.y + square_size)))
-            {
-                if (ImGui::IsMouseClicked(0))
-                {
-                    if (selected_piece && selected_pos.first == x && selected_pos.second == y)
-                    {
-                        // Si on clique sur la même pièce, on la désélectionne
-                        selected_piece = false;
-                        std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
-                    }
-                    else if (selected_piece)
-                    {
-                        // Si une pièce est sélectionnée, on veut peut-être la déplacer
-                        Piece* piece = grid[selected_pos.first][selected_pos.second];
-                        if (piece != nullptr)
-                        {
-                            // Déplacer la pièce
-                            std::cout << "Déplacement de la pièce: (" << selected_pos.first << ", " << selected_pos.second << ") -> (" << x << ", " << y << ")\n";
-                            movePiece(selected_pos, {x, y});
-                            selected_piece = false;  // Désélectionner après déplacement
-                        }
-                    }
-                    else
-                    {
-                        // Si aucune pièce n'est sélectionnée, on sélectionne la pièce de la case
-                        selected_pos = {x, y};
-                        Piece* piece = grid[selected_pos.first][selected_pos.second];
-                        if (piece != nullptr)
-                        {
-                            std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
-                            selected_piece = true;
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -135,7 +98,30 @@ void Board::render()
                 std::string piece_str = piece->get_type();
 
                 // Dessiner la pièce
-                ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + square_size / 4, pos.y + square_size / 4), IM_COL32(0, 0, 0, 255), piece_str.c_str());
+                ImGui::SetCursorScreenPos(pos);
+                std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
+                
+                ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == "White" ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+                ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == "White" ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
+                
+                if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
+                {
+                    if (selected_piece && selected_pos.first == x && selected_pos.second == y)
+                    {
+                        // Désélectionner la pièce si on clique dessus une deuxième fois
+                        selected_piece = false;
+                        std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
+                    }
+                    else
+                    {
+                        // Sélectionner la nouvelle pièce
+                        selected_piece = true;
+                        selected_pos = {x, y};
+                        std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
+                    }
+                }
+                
+                ImGui::PopStyleColor(2);
             }
         }
     }

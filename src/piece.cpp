@@ -10,6 +10,10 @@ Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std:
     color = stringToColor(colorStr);
 }
 
+std::string Piece::get_color() const {
+    return color == Color::White ? "White" : "Black";
+}
+
 // Convertir une string en Name
 Piece::Name Piece::stringToName(const std::string& nameStr)
 {
