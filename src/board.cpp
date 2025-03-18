@@ -147,6 +147,7 @@ void Board::render()
                 {
                     if (piece->get_color() == last_moved_piece_color)
                     {
+                        // Dessiner un cercle vert transparent à la position du mouvement possible mais pas jouble
                         ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 100, 0, 100));
                     }
                     else
@@ -184,7 +185,7 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
 
     // Vérifier si le mouvement est valide via la méthode move de la pièce
     std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
-    if (std::find(moves.begin(), moves.end(), to) == moves.end())
+    if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
     {
         std::cout << "Mouvement invalide pour " << piece->get_type()
                   << " de (" << from.first << "," << from.second << ")"
