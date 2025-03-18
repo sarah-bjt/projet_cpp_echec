@@ -7,12 +7,12 @@
 
 class Board {
 private:
-    std::vector<std::vector<Piece*>> grid;                            // 8x8 pour les pièces
-    ImVec2                           board_pos      = ImVec2(50, 50); // Position de l'interface du plateau
-    float                            square_size    = 50.0f;          // Taille d'une case en pixels
-    bool                             selected_piece = false;          // Pour savoir si une pièce est sélectionnée
-    std::pair<int, int>              selected_pos;                    // Position de la pièce sélectionnée
-    Piece::Color                     last_moved_piece_color;          // Couleur de la dernière pièce bougé
+    std::vector<std::vector<Piece*>> grid;                                         // 8x8 pour les pièces
+    ImVec2                           board_pos      = ImVec2(50, 50);              // Position de l'interface du plateau
+    float                            square_size    = 50.0f;                       // Taille d'une case en pixels
+    bool                             selected_piece = false;                       // Pour savoir si une pièce est sélectionnée
+    std::pair<int, int>              selected_pos;                                 // Position de la pièce sélectionnée
+    Piece::Color                     last_moved_piece_color = Piece::Color::Black; // Couleur de la dernière pièce bougé
 
 public:
     Board();
