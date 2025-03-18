@@ -10,10 +10,6 @@ Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std:
     color = stringToColor(colorStr);
 }
 
-// std::string Piece::get_color() const {
-//     return color == Color::White ? "White" : "Black";
-// }
-
 // Convertir une string en Name
 Piece::Name Piece::stringToName(const std::string& nameStr)
 {
@@ -45,6 +41,11 @@ Piece::Color Piece::stringToColor(const std::string& colorStr)
 Piece::State Piece::get_state() const
 {
     return state;
+}
+
+void Piece::set_state(State newState)
+{
+    this->state = newState;
 }
 
 Piece::Color Piece::get_color() const
@@ -258,6 +259,3 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         std::cout << "Déplacement invalide !" << std::endl;
     }
 }
-
-// Blah blah c'est pour le push
-//  pipipopo

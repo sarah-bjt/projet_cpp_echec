@@ -24,11 +24,6 @@ private:
         Pawn
     };
 
-    // enum class Color : uint8_t {
-    //     Black,
-    //     White
-    // };
-
     State               state;
     Color               color;
     Name                name;

@@ -183,6 +183,14 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     if (piece == nullptr)
         return false;
 
+    Piece* target_piece = grid[to.first][to.second];
+    if (target_piece != nullptr)
+    {
+        // La pièce cible existe et doit être capturée
+        target_piece->set_state(Piece::State::Dead);
+        std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
+    }
+    
     // Vérifier si le mouvement est valide via la méthode move de la pièce
     std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
     if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
