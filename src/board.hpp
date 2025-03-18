@@ -12,6 +12,7 @@ private:
     float                            square_size    = 50.0f;          // Taille d'une case en pixels
     bool                             selected_piece = false;          // Pour savoir si une pièce est sélectionnée
     std::pair<int, int>              selected_pos;                    // Position de la pièce sélectionnée
+    Piece::Color                     last_moved_piece_color;          // Couleur de la dernière pièce bougé
 
 public:
     Board();

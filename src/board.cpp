@@ -74,14 +74,14 @@ void Board::render()
 
     // 1. Dessiner les cases
     for (int y = 7; y >= 0; --y)
-    { 
+    {
         for (int x = 0; x < 8; ++x)
         {
             ImVec2 pos  = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
             ImVec2 size = ImVec2(square_size, square_size);
 
             // Dessiner les cases
-            ImU32 color = (x + y) % 2 == 0 ? IM_COL32(240, 217, 181, 255) : IM_COL32(119, 148, 85, 255);
+            ImU32 color = (x + y) % 2 == 0 ? IM_COL32(119, 148, 85, 255) : IM_COL32(240, 217, 181, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }
@@ -94,16 +94,16 @@ void Board::render()
             Piece* piece = grid[x][y];
             if (piece != nullptr)
             {
-                ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
+                ImVec2      pos       = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
                 std::string piece_str = piece->get_type();
 
                 // Dessiner la pièce
                 ImGui::SetCursorScreenPos(pos);
                 std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
-                
-                ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == "White" ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
-                ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == "White" ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
-                
+
+                ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+                ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
+
                 if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
                 {
                     if (selected_piece && selected_pos.first == x && selected_pos.second == y)
@@ -116,11 +116,11 @@ void Board::render()
                     {
                         // Sélectionner la nouvelle pièce
                         selected_piece = true;
-                        selected_pos = {x, y};
+                        selected_pos   = {x, y};
                         std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
                     }
                 }
-                
+
                 ImGui::PopStyleColor(2);
             }
         }
@@ -145,8 +145,15 @@ void Board::render()
                 // Vérifier si une pièce est déjà présente sur la case
                 if (!is_piece_at(move)) // Si la case n'est pas occupée par une pièce
                 {
-                    // Dessiner un cercle vert à la position du mouvement possible
-                    ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 255, 0, 255));
+                    if (piece->get_color() == last_moved_piece_color)
+                    {
+                        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 100, 0, 100));
+                    }
+                    else
+                    {
+                        // Dessiner un cercle vert à la position du mouvement possible
+                        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 255, 0, 255));
+                    }
                 }
 
                 // Gérer le clic pour déplacer la pièce
@@ -182,17 +189,17 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         std::cout << "Mouvement invalide pour " << piece->get_type()
                   << " de (" << from.first << "," << from.second << ")"
                   << " à (" << to.first << "," << to.second << ")" << std::endl;
-        return false;  // Mouvement invalide
+        return false; // Mouvement invalide
     }
 
     // Si le mouvement est valide, procéder au déplacement
-    piece->move(to, grid); // Effectuer le mouvement dans la pièce
-    grid[to.first][to.second] = piece;     // Mettre à jour la grille
-    grid[from.first][from.second] = nullptr;  // Libérer la case d'origine
-    return true;  // Mouvement valide, on a effectué le déplacement
+    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
+    grid[to.first][to.second]     = piece;   // Mettre à jour la grille
+    grid[from.first][from.second] = nullptr; // Libérer la case d'origine
+    // Met à jour la dernière couleur déplacée
+    last_moved_piece_color = piece->get_color();
+    return true; // Mouvement valide, on a effectué le déplacement
 }
-
-
 
 // Informe si une pièce est présente sur une case donnée
 bool Board::is_piece_at(const std::pair<int, int>& pos)
