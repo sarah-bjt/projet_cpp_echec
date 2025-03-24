@@ -67,37 +67,37 @@ void Board::placePiece(Piece* piece, int x, int y)
     grid[x][y] = piece;
 }
 
-// bool Board::is_game_over() {
-//     bool whiteKingAlive = false;
-//     bool blackKingAlive = false;
+bool Board::is_game_over() {
+    bool whiteKingAlive = false;
+    bool blackKingAlive = false;
 
-//     for (int y = 0; y < 8; ++y) {
-//         for (int x = 0; x < 8; ++x) {
-//             Piece* piece = grid[x][y];
-//             if (piece != nullptr) {
-//                 if (piece->get_type() == "King") {
-//                     if (piece->get_color() == "White" && piece->get_state() == Piece::State::Alive) {
-//                         whiteKingAlive = true;
-//                     } else if (piece->get_color() == "Black" && piece->get_state() == Piece::State::Alive) {
-//                         blackKingAlive = true;
-//                     }
-//                 }
-//             }
-//         }
-//     }
+    for (int y = 0; y < 8; ++y) {
+        for (int x = 0; x < 8; ++x) {
+            Piece* piece = grid[x][y];
+            if (piece != nullptr) {
+                if (piece->get_type() == "White King" || piece->get_type() == "Black King") {
+                    if (piece->get_color() == Piece::Color::White && piece->get_state() == Piece::State::Alive) {
+                        whiteKingAlive = true;
+                    } else if (piece->get_color() == Piece::Color::Black && piece->get_state() == Piece::State::Alive) {
+                        blackKingAlive = true;
+                    }
+                }
+            }
+        }
+    }
 
-//     // Si l'un des rois est mort, la partie est finie
-//     if (!whiteKingAlive) {
-//         std::cout << "Le roi blanc a été capturé. La partie est terminée." << std::endl;
-//         return true;  // La partie est terminée
-//     }
-//     if (!blackKingAlive) {
-//         std::cout << "Le roi noir a été capturé. La partie est terminée." << std::endl;
-//         return true;  // La partie est terminée
-//     }
+    // Si l'un des rois est mort, la partie est finie
+    if (!whiteKingAlive) {
+        std::cout << "Le roi blanc a été capturé. La partie est terminée." << std::endl;
+        return true;  // La partie est terminée
+    }
+    if (!blackKingAlive) {
+        std::cout << "Le roi noir a été capturé. La partie est terminée." << std::endl;
+        return true;  // La partie est terminée
+    }
 
-//     return false;
-// }
+    return false;
+}
 
 // Afficher le plateau
 void Board::render()
@@ -258,6 +258,12 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         // La pièce cible existe et doit être capturée
         target_piece->set_state(Piece::State::Dead);
         std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
+
+        if (target_piece->get_type() == "King")
+        {
+            std::cout << "Le roi a été capturé. La partie est terminée." << std::endl;
+            return true; // La partie est terminée
+        }
     }
 
     // Vérifier si le mouvement est valide via la méthode move de la pièce
@@ -287,8 +293,17 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         ImGui::OpenPopup("Promotion");
         return true; // Ne pas continuer tant que la promotion n'est pas choisie
     }
+
+    // Appeler is_game_over après chaque mouvement
+    if (is_game_over())
+    {
+        std::cout << "La partie est terminée.\n";
+        return true; // Partie terminée
+    }
+
     return true; // Mouvement valide, on a effectué le déplacement
 }
+
 
 // Informe si une pièce est présente sur une case donnée
 bool Board::is_piece_at(const std::pair<int, int>& pos)
