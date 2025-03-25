@@ -67,18 +67,26 @@ void Board::placePiece(Piece* piece, int x, int y)
     grid[x][y] = piece;
 }
 
-bool Board::is_game_over() {
+bool Board::is_game_over()
+{
     bool whiteKingAlive = false;
     bool blackKingAlive = false;
 
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
+    for (int y = 0; y < 8; ++y)
+    {
+        for (int x = 0; x < 8; ++x)
+        {
             Piece* piece = grid[x][y];
-            if (piece != nullptr) {
-                if (piece->get_type() == "White King" || piece->get_type() == "Black King") {
-                    if (piece->get_color() == Piece::Color::White && piece->get_state() == Piece::State::Alive) {
+            if (piece != nullptr)
+            {
+                if (piece->get_type() == "White King" || piece->get_type() == "Black King")
+                {
+                    if (piece->get_color() == Piece::Color::White && piece->get_state() == Piece::State::Alive)
+                    {
                         whiteKingAlive = true;
-                    } else if (piece->get_color() == Piece::Color::Black && piece->get_state() == Piece::State::Alive) {
+                    }
+                    else if (piece->get_color() == Piece::Color::Black && piece->get_state() == Piece::State::Alive)
+                    {
                         blackKingAlive = true;
                     }
                 }
@@ -87,13 +95,15 @@ bool Board::is_game_over() {
     }
 
     // Si l'un des rois est mort, la partie est finie
-    if (!whiteKingAlive) {
+    if (!whiteKingAlive)
+    {
         std::cout << "Le roi blanc a été capturé. La partie est terminée." << std::endl;
-        return true;  // La partie est terminée
+        return true; // La partie est terminée
     }
-    if (!blackKingAlive) {
+    if (!blackKingAlive)
+    {
         std::cout << "Le roi noir a été capturé. La partie est terminée." << std::endl;
-        return true;  // La partie est terminée
+        return true; // La partie est terminée
     }
 
     return false;
@@ -127,7 +137,7 @@ void Board::render()
             if (piece != nullptr)
             {
                 ImVec2      pos       = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
-                std::string piece_str = piece->get_type();
+                std::string piece_str = piece->get_name();
 
                 // Dessiner la pièce
                 ImGui::SetCursorScreenPos(pos);
@@ -303,7 +313,6 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
 
     return true; // Mouvement valide, on a effectué le déplacement
 }
-
 
 // Informe si une pièce est présente sur une case donnée
 bool Board::is_piece_at(const std::pair<int, int>& pos)

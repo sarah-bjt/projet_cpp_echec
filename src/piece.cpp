@@ -85,6 +85,21 @@ std::string Piece::get_type() const
     return (color == Color::White ? "White " : "Black ") + nameStr;
 }
 
+std::string Piece::get_name() const
+{
+    std::string nameStr;
+    switch (name)
+    {
+    case Name::Rook: nameStr = "Rook"; break;
+    case Name::Knight: nameStr = "Knight"; break;
+    case Name::Bishop: nameStr = "Bishop"; break;
+    case Name::Queen: nameStr = "Queen"; break;
+    case Name::King: nameStr = "King"; break;
+    case Name::Pawn: nameStr = "Pawn"; break;
+    }
+    return nameStr;
+}
+
 // Vérifier si une case contient une pièce adverse
 bool Piece::is_enemy(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const
 {

@@ -41,6 +41,7 @@ public:
     std::string                      get_type() const;
     State                            get_state() const;
     Color                            get_color() const;
+    std::string                      get_name() const;
     void                             set_state(State newState);
     bool                             is_enemy(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
     bool                             is_empty(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
