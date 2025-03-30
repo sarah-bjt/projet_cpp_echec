@@ -152,14 +152,14 @@ void Board::render()
                     {
                         // Désélectionner la pièce si on clique dessus une deuxième fois
                         selected_piece = false;
-                        std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
+                        // std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
                     }
                     else
                     {
                         // Sélectionner la nouvelle pièce
                         selected_piece = true;
                         selected_pos   = {x, y};
-                        std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
+                        // std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
                     }
                 }
 
@@ -253,6 +253,23 @@ void Board::render()
 
         ImGui::EndPopup();
     }
+
+    if (is_game_over())
+    {
+        ImGui::OpenPopup("Game Over");
+    }
+
+    if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+
+        if (ImGui::Button("Quitter"))
+        {
+            exit(0); // Ferme le programme
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 // Fonction pour déplacer une pièce d'une case à une autre
@@ -267,22 +284,16 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     {
         // La pièce cible existe et doit être capturée
         target_piece->set_state(Piece::State::Dead);
-        std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
-
-        if (target_piece->get_type() == "King")
-        {
-            std::cout << "Le roi a été capturé. La partie est terminée." << std::endl;
-            return true; // La partie est terminée
-        }
+        // std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
     }
 
     // Vérifier si le mouvement est valide via la méthode move de la pièce
     std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
     if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
     {
-        std::cout << "Mouvement invalide pour " << piece->get_type()
-                  << " de (" << from.first << "," << from.second << ")"
-                  << " à (" << to.first << "," << to.second << ")" << std::endl;
+        // std::cout << "Mouvement invalide pour " << piece->get_type()
+        //           << " de (" << from.first << "," << from.second << ")"
+        //           << " à (" << to.first << "," << to.second << ")" << std::endl;
         return false; // Mouvement invalide
     }
 
@@ -302,13 +313,6 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         promoted_piece   = piece;
         ImGui::OpenPopup("Promotion");
         return true; // Ne pas continuer tant que la promotion n'est pas choisie
-    }
-
-    // Appeler is_game_over après chaque mouvement
-    if (is_game_over())
-    {
-        std::cout << "La partie est terminée.\n";
-        return true; // Partie terminée
     }
 
     return true; // Mouvement valide, on a effectué le déplacement
