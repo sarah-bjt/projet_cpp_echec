@@ -49,6 +49,31 @@ Board::Board()
     }
 }
 
+// Méthode d'initialisation du plateau
+void Board::init()
+{
+    // Initialiser la position du plateau sur l'écran
+    board_pos = ImVec2(50, 50);  // Position du coin supérieur gauche du plateau
+    
+    // Définir la taille des cases
+    square_size = 60;  // Taille en pixels de chaque case
+    
+    // Initialiser les variables de sélection
+    selected_piece = false;
+    selected_pos = {-1, -1};
+    
+    // Initialiser les variables de promotion
+    promotion_active = false;
+    promoted_piece = nullptr;
+    
+    // Initialiser la couleur de la dernière pièce déplacée
+    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
+    last_moved_piece_color = Piece::Color::Black;
+    
+    // Autres initialisations éventuelles
+    std::cout << "Plateau d'échecs initialisé" << std::endl;
+}
+
 // Destructeur pour libérer la mémoire des pièces
 Board::~Board()
 {

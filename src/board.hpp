@@ -23,6 +23,8 @@ public:
     Board();
     ~Board();
 
+    void init();
+
     // Afficher le plateau avec IMGui
     void render();
 
