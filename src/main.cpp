@@ -1,8 +1,7 @@
-
 #include <imgui.h>
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 #include <iostream>
-#include "Camera.hpp"
+#include "lib/glmax/src/Camera.hpp"
 #include "Model3D.hpp"
 #include "Shader.hpp"
 #include "board.hpp" // Inclure le fichier de la classe Board
