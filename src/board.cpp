@@ -1,17 +1,13 @@
-#include "board.hpp"
-#include <imgui.h>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include "piece.hpp"
+#include <board.hpp>
 
-// Surcharge de l'opérateur + pour ImVec2
+namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 {
     return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
+} // namespace
 
-// Constructeur pour initialiser un plateau vide et placer les pièces
+// Constructeur
 Board::Board()
 {
     grid.resize(8, std::vector<Piece*>(8, nullptr));
@@ -49,32 +45,7 @@ Board::Board()
     }
 }
 
-// Méthode d'initialisation du plateau
-void Board::init()
-{
-    // Initialiser la position du plateau sur l'écran
-    board_pos = ImVec2(50, 50);  // Position du coin supérieur gauche du plateau
-    
-    // Définir la taille des cases
-    square_size = 60;  // Taille en pixels de chaque case
-    
-    // Initialiser les variables de sélection
-    selected_piece = false;
-    selected_pos = {-1, -1};
-    
-    // Initialiser les variables de promotion
-    promotion_active = false;
-    promoted_piece = nullptr;
-    
-    // Initialiser la couleur de la dernière pièce déplacée
-    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
-    last_moved_piece_color = Piece::Color::Black;
-    
-    // Autres initialisations éventuelles
-    std::cout << "Plateau d'échecs initialisé" << std::endl;
-}
-
-// Destructeur pour libérer la mémoire des pièces
+// Destructeur
 Board::~Board()
 {
     for (auto& row : grid)
@@ -86,12 +57,38 @@ Board::~Board()
     }
 }
 
+// Méthode d'initialisation du plateau
+void Board::init()
+{
+    // Initialiser la position du plateau sur l'écran
+    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
+
+    // Définir la taille des cases
+    square_size = 60; // Taille en pixels de chaque case
+
+    // Initialiser les variables de sélection
+    selected_piece = false;
+    selected_pos   = {-1, -1};
+
+    // Initialiser les variables de promotion
+    promotion_active = false;
+    promoted_piece   = nullptr;
+
+    // Initialiser la couleur de la dernière pièce déplacée
+    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
+    last_moved_piece_color = Piece::Color::Black;
+
+    // Autres initialisations éventuelles
+    std::cout << "Plateau d'échecs initialisé" << std::endl;
+}
+
 // Placer une pièce sur une case donnée
 void Board::placePiece(Piece* piece, int x, int y)
 {
     grid[x][y] = piece;
 }
 
+// Vérifier si le jeu est terminé
 bool Board::is_game_over()
 {
     bool whiteKingAlive = false;
@@ -104,30 +101,21 @@ bool Board::is_game_over()
             Piece* piece = grid[x][y];
             if (piece != nullptr)
             {
-                if (piece->get_type() == "White King" || piece->get_type() == "Black King")
+                if (piece->get_type() == "White King" && piece->get_state() == Piece::State::Alive)
                 {
-                    if (piece->get_color() == Piece::Color::White && piece->get_state() == Piece::State::Alive)
-                    {
-                        whiteKingAlive = true;
-                    }
-                    else if (piece->get_color() == Piece::Color::Black && piece->get_state() == Piece::State::Alive)
-                    {
-                        blackKingAlive = true;
-                    }
+                    whiteKingAlive = true;
+                }
+                else if (piece->get_type() == "Black King" && piece->get_state() == Piece::State::Alive)
+                {
+                    blackKingAlive = true;
                 }
             }
         }
     }
 
     // Si l'un des rois est mort, la partie est finie
-    if (!whiteKingAlive)
+    if (!whiteKingAlive || !blackKingAlive)
     {
-        std::cout << "Le roi blanc a été capturé. La partie est terminée." << std::endl;
-        return true; // La partie est terminée
-    }
-    if (!blackKingAlive)
-    {
-        std::cout << "Le roi noir a été capturé. La partie est terminée." << std::endl;
         return true; // La partie est terminée
     }
 
@@ -137,23 +125,38 @@ bool Board::is_game_over()
 // Afficher le plateau
 void Board::render()
 {
-    bool piece_clicked = false;
+    renderBoardSquares();
+    renderPieces();
 
-    // 1. Dessiner les cases
+    if (selected_piece)
+    {
+        renderPossibleMoves();
+        renderSelectionInfo();
+    }
+
+    handlePromotionPopup();
+    handleGameOverPopup();
+}
+
+// Dessiner les cases de l'échiquier
+void Board::renderBoardSquares()
+{
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
         {
-            ImVec2 pos  = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
-            ImVec2 size = ImVec2(square_size, square_size);
+            ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size);
 
             // Dessiner les cases
             ImU32 color = (x + y) % 2 == 0 ? IM_COL32(119, 148, 85, 255) : IM_COL32(240, 217, 181, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }
+}
 
-    // 2. Afficher les pièces après les cases
+// Afficher les pièces sur l'échiquier
+void Board::renderPieces()
+{
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
@@ -161,87 +164,127 @@ void Board::render()
             Piece* piece = grid[x][y];
             if (piece != nullptr)
             {
-                ImVec2      pos       = board_pos + ImVec2(x * square_size, (7 - y) * square_size); // Inverser y pour que (0,0) soit en bas à gauche
-                std::string piece_str = piece->get_name();
-
-                // Dessiner la pièce
-                ImGui::SetCursorScreenPos(pos);
-                std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
-
-                ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
-                ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
-
-                if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
-                {
-                    if (selected_piece && selected_pos.first == x && selected_pos.second == y)
-                    {
-                        // Désélectionner la pièce si on clique dessus une deuxième fois
-                        selected_piece = false;
-                        // std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
-                    }
-                    else
-                    {
-                        // Sélectionner la nouvelle pièce
-                        selected_piece = true;
-                        selected_pos   = {x, y};
-                        // std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
-                    }
-                }
-
-                ImGui::PopStyleColor(2);
+                renderPieceAt(piece, x, y);
             }
         }
     }
+}
 
-    // 3. Afficher les mouvements possibles de la pièce sélectionnée
-    if (selected_piece)
+// Afficher une pièce à une position spécifique
+void Board::renderPieceAt(Piece* piece, int x, int y)
+{
+    ImVec2      pos       = board_pos + ImVec2(x * square_size, (7 - y) * square_size);
+    std::string piece_str = piece->get_name();
+
+    // Dessiner la pièce
+    ImGui::SetCursorScreenPos(pos);
+    std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
+
+    ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+    ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
+
+    if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
     {
-        Piece* piece = grid[selected_pos.first][selected_pos.second];
-        if (piece != nullptr)
+        handlePieceSelection(x, y);
+    }
+
+    ImGui::PopStyleColor(2);
+}
+
+// Gérer la sélection d'une pièce
+void Board::handlePieceSelection(int x, int y)
+{
+    if (selected_piece && selected_pos.first == x && selected_pos.second == y)
+    {
+        // Désélectionner la pièce si on clique dessus une deuxième fois
+        selected_piece = false;
+        // std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
+    }
+    else
+    {
+        // Sélectionner la nouvelle pièce
+        selected_piece = true;
+        selected_pos   = {x, y};
+        // std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
+    }
+}
+
+// Afficher les mouvements possibles pour la pièce sélectionnée
+void Board::renderPossibleMoves()
+{
+    Piece* piece = grid[selected_pos.first][selected_pos.second];
+    if (piece != nullptr)
+    {
+        // Obtenir les mouvements possibles de la pièce
+        std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
+
+        std::cout << "Mouvements possibles pour la pièce sélectionnée: ("
+                  << selected_pos.first << ", " << selected_pos.second << ")\n";
+
+        for (const auto& move : moves)
         {
-            // Obtenir les mouvements possibles de la pièce
-            std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
-
-            std::cout << "Mouvements possibles pour la pièce sélectionnée: (" << selected_pos.first << ", " << selected_pos.second << ")\n";
-
-            for (const auto& move : moves)
-            {
-                // Calculer la position du cercle de mouvement (en tenant compte de l'inversion de y)
-                ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
-
-                // Vérifier si une pièce est déjà présente sur la case
-                if (!is_piece_at(move)) // Si la case n'est pas occupée par une pièce
-                {
-                    if (piece->get_color() == last_moved_piece_color)
-                    {
-                        // Dessiner un cercle vert transparent à la position du mouvement possible mais pas jouble
-                        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 100, 0, 100));
-                    }
-                    else
-                    {
-                        // Dessiner un cercle vert à la position du mouvement possible
-                        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2), 10.0f, IM_COL32(0, 255, 0, 255));
-                    }
-                }
-
-                // Gérer le clic pour déplacer la pièce
-                if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size)) && ImGui::IsMouseClicked(0))
-                {
-                    std::cout << "Déplacement effectué vers (" << move.first << ", " << move.second << ")\n";
-                    movePiece(selected_pos, move);
-                    selected_piece = false; // Désélectionner après déplacement
-                }
-            }
+            renderMoveIndicator(piece, move);
+            handleMoveSelection(move);
         }
     }
+}
 
-    // 4. Afficher un message en bas indiquant la case sélectionnée
-    if (selected_piece)
+// Afficher l'indicateur visuel pour un mouvement possible
+void Board::renderMoveIndicator(Piece* piece, const std::pair<int, int>& move)
+{
+    // Calculer la position du cercle de mouvement (en tenant compte de l'inversion de y)
+    ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
+
+    // Vérifier si une pièce est déjà présente sur la case
+    if (!is_piece_at(move)) // Si la case n'est pas occupée par une pièce
     {
-        std::string msg = "Case sélectionnée : (" + std::to_string(selected_pos.first) + ", " + std::to_string(selected_pos.second) + ")";
-        ImGui::Text("%s", msg.c_str());
+        if (piece->get_color() == last_moved_piece_color)
+        {
+            // Dessiner un cercle vert transparent à la position du mouvement possible mais pas jouable
+            ImGui::GetWindowDrawList()->AddCircleFilled(
+                ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
+                10.0f, IM_COL32(0, 100, 0, 100)
+            );
+        }
+        else
+        {
+            // Dessiner un cercle vert à la position du mouvement possible
+            ImGui::GetWindowDrawList()->AddCircleFilled(
+                ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
+                10.0f, IM_COL32(0, 255, 0, 255)
+            );
+        }
     }
+}
 
+// Gérer la sélection d'un mouvement par clic
+void Board::handleMoveSelection(const std::pair<int, int>& move)
+{
+    // Calculer la position du mouvement sur l'écran
+    ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
+
+    // Gérer le clic pour déplacer la pièce
+    if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size))
+        && ImGui::IsMouseClicked(0))
+    {
+        std::cout << "Déplacement effectué vers (" << move.first << ", " << move.second << ")\n";
+        movePiece(selected_pos, move);
+        selected_piece = false; // Désélectionner après déplacement
+    }
+}
+
+// Afficher les informations sur la sélection actuelle
+void Board::renderSelectionInfo()
+{
+    std::string msg = "Case sélectionnée : ("
+                      + std::to_string(selected_pos.first)
+                      + ", " + std::to_string(selected_pos.second) + ")";
+    ImGui::Text("%s", msg.c_str());
+}
+
+// Gérer la popup de promotion d'un pion
+void Board::handlePromotionPopup()
+{
     if (promotion_active)
     {
         ImGui::OpenPopup("Promotion");
@@ -253,32 +296,40 @@ void Board::render()
 
         if (ImGui::Button("Queen"))
         {
-            promoted_piece->promote("Queen");
-            promotion_active = false;
-            ImGui::CloseCurrentPopup();
+            promotePawn("Queen", false);
         }
         if (ImGui::Button("Rook"))
         {
-            promoted_piece->promote("Rook");
-            promotion_active = false;
-            ImGui::CloseCurrentPopup();
+            promotePawn("Rook", false);
         }
         if (ImGui::Button("Bishop"))
         {
-            promoted_piece->promote("Bishop");
-            promotion_active = false;
-            ImGui::CloseCurrentPopup();
+            promotePawn("Bishop", false);
         }
         if (ImGui::Button("Knight"))
         {
-            promoted_piece->promote("Knight");
-            promotion_active = false;
-            ImGui::CloseCurrentPopup();
+            promotePawn("Knight", false);
+        }
+        if (ImGui::Button("Aléatoir ;)"))
+        {
+            promotePawn("Knight", true);
         }
 
         ImGui::EndPopup();
     }
+}
 
+// Promouvoir un pion avec le type spécifié
+void Board::promotePawn(const std::string& pieceType, bool aleat)
+{
+    promoted_piece->promote(pieceType, aleat);
+    promotion_active = false;
+    ImGui::CloseCurrentPopup();
+}
+
+// Gérer la popup de fin de partie
+void Board::handleGameOverPopup()
+{
     if (is_game_over())
     {
         ImGui::OpenPopup("Game Over");
@@ -304,15 +355,25 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
     if (piece == nullptr)
         return false;
 
-    Piece* target_piece = grid[to.first][to.second];
-    if (target_piece != nullptr)
-    {
-        // La pièce cible existe et doit être capturée
-        target_piece->set_state(Piece::State::Dead);
-        // std::cout << "Capture de la pièce à (" << to.first << ", " << to.second << ")\n";
-    }
+    if (!isValidMove(piece, from, to))
+        return false;
 
-    // Vérifier si le mouvement est valide via la méthode move de la pièce
+    // Capturer la pièce sur la case cible si elle existe
+    capturePieceIfPresent(to);
+
+    // Effectuer le déplacement
+    performMove(piece, from, to);
+
+    // Vérifier si un pion peut être promu
+    if (checkForPawnPromotion(piece, to))
+        return true;
+
+    return true; // Mouvement valide, on a effectué le déplacement
+}
+
+// Vérifier si un mouvement est valide
+bool Board::isValidMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
+{
     std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
     if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
     {
@@ -321,26 +382,45 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         //           << " à (" << to.first << "," << to.second << ")" << std::endl;
         return false; // Mouvement invalide
     }
+    return true;
+}
 
-    // Si le mouvement est valide, procéder au déplacement
+// Capturer une pièce si elle est présente à la position spécifiée
+void Board::capturePieceIfPresent(const std::pair<int, int>& position)
+{
+    Piece* target_piece = grid[position.first][position.second];
+    if (target_piece != nullptr)
+    {
+        // La pièce cible existe et doit être capturée
+        target_piece->set_state(Piece::State::Dead);
+        // std::cout << "Capture de la pièce à (" << position.first << ", " << position.second << ")\n";
+    }
+}
+
+// Effectuer le déplacement d'une pièce
+void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
+{
     piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
     grid[to.first][to.second]     = piece;   // Mettre à jour la grille
     grid[from.first][from.second] = nullptr; // Libérer la case d'origine
+
     // Met à jour la dernière couleur déplacée
     last_moved_piece_color = piece->get_color();
+}
 
-    if ((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (to.second == 0 || to.second == 7))
+// Vérifier si un pion peut être promu
+bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& position)
+{
+    if ((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7))
     {
         std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
         // Activer la promotion
         promotion_active = true;
-        promotion_pos    = to;
+        promotion_pos    = position;
         promoted_piece   = piece;
-        ImGui::OpenPopup("Promotion");
         return true; // Ne pas continuer tant que la promotion n'est pas choisie
     }
-
-    return true; // Mouvement valide, on a effectué le déplacement
+    return false;
 }
 
 // Informe si une pièce est présente sur une case donnée

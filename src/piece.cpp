@@ -48,7 +48,7 @@ void Piece::set_state(State newState)
     this->state = newState;
 }
 
-void Piece::promote(std::string newType)
+void Piece::promote(std::string newType, bool aleat)
 {
     if (newType == "Queen")
         name = Name::Queen;
@@ -58,6 +58,14 @@ void Piece::promote(std::string newType)
         name = Name::Bishop;
     else if (newType == "Knight")
         name = Name::Knight;
+    if (aleat)
+    {
+        bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
+        if (newColor)
+        {
+            color = Color::Black;
+        }
+    }
 }
 
 Piece::Color Piece::get_color() const

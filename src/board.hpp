@@ -19,6 +19,27 @@ private:
     std::pair<int, int> promotion_pos;            // Position du pion à promouvoir
     Piece*              promoted_piece = nullptr; // Stocke le pion qui doit être promu
 
+    // Méthodes d'affichage
+    void renderBoardSquares();
+    void renderPieces();
+    void renderPieceAt(Piece* piece, int x, int y);
+    void renderPossibleMoves();
+    void renderMoveIndicator(Piece* piece, const std::pair<int, int>& move);
+    void renderSelectionInfo();
+
+    // Méthodes de gestion d'interaction
+    void handlePieceSelection(int x, int y);
+    void handleMoveSelection(const std::pair<int, int>& move);
+    void handlePromotionPopup();
+    void handleGameOverPopup();
+    void promotePawn(const std::string& pieceType, bool aleat);
+
+    // Méthodes de logique de jeu
+    bool isValidMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to);
+    void capturePieceIfPresent(const std::pair<int, int>& position);
+    void performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to);
+    bool checkForPawnPromotion(Piece* piece, const std::pair<int, int>& position);
+
 public:
     Board();
     ~Board();

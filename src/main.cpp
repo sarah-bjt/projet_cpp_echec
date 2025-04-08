@@ -17,7 +17,7 @@ int main()
     // RandomDistributions random(12345);
 
     // Afficher des échantillons de chaque distribution
-    random.generateSamples(10);
+    // random.generateSamples(10);
 
     // Démontrer l'utilisation individuelle de chaque distribution
     std::cout << "\n==== Utilisation individuelle des distributions ====\n";

@@ -248,3 +248,6 @@ void RandomDistributions::generateSamples(int count)
 
     std::cout << std::endl;
 }
+
+// Variable globale accessible depuis n'importe où
+RandomDistributions globalRandom;

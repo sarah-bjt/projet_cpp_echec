@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
+#include <string>
 #include <vector>
+#include "maths.hpp"
 
 class Piece {
 public:
@@ -45,5 +47,5 @@ public:
     void                             set_state(State newState);
     bool                             is_enemy(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
     bool                             is_empty(const std::pair<int, int>& pos, const std::vector<std::vector<Piece*>>& board) const;
-    void                             promote(std::string newType);
+    void                             promote(std::string newType, bool aleat);
 };

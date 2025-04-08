@@ -1,12 +1,13 @@
-#ifndef RANDOM_DISTRIBUTIONS_H
-#define RANDOM_DISTRIBUTIONS_H
+// #ifndef RANDOM_DISTRIBUTIONS_H
+// #define RANDOM_DISTRIBUTIONS_H
+
+#pragma once
 
 #include <cmath>   // Pour les calculs mathématiques
 #include <cstdlib> // Pour rand() et srand()
 #include <ctime>   // Pour time()
 #include <iostream>
 #include <vector>
-
 
 class RandomDistributions {
 public:
@@ -60,4 +61,7 @@ private:
     double factorial(int n);
 };
 
-#endif // RANDOM_DISTRIBUTIONS_H
+// Déclaration de la variable globale
+extern RandomDistributions globalRandom;
+
+// #endif // RANDOM_DISTRIBUTIONS_H
