@@ -1,6 +1,3 @@
-// #ifndef RANDOM_DISTRIBUTIONS_H
-// #define RANDOM_DISTRIBUTIONS_H
-
 #pragma once
 
 #include <cmath>   // Pour les calculs mathématiques
@@ -63,5 +60,3 @@ private:
 
 // Déclaration de la variable globale
 extern RandomDistributions globalRandom;
-
-// #endif // RANDOM_DISTRIBUTIONS_H

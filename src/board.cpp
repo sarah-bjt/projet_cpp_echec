@@ -1,4 +1,7 @@
+#include <imgui.h>
 #include <board.hpp>
+#include <vector>
+#include "maths.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -6,31 +9,6 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
     return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 } // namespace
-
-// Constructeur
-Board::Board()
-{
-    // Initialiser la position du plateau sur l'écran
-    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
-
-    // Définir la taille des cases
-    square_size = 60; // Taille en pixels de chaque case
-
-    // Initialiser les variables de sélection
-    selected_piece = false;
-    selected_pos   = {-1, -1};
-
-    // Initialiser les variables de promotion
-    promotion_active = false;
-    promoted_piece   = nullptr;
-
-    // Initialiser la couleur de la dernière pièce déplacée
-    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
-    last_moved_piece_color = Piece::Color::Black;
-
-    // Autres initialisations éventuelles
-    std::cout << "Plateau d'échecs initialisé" << std::endl;
-}
 
 // Destructeur
 Board::~Board()
@@ -47,6 +25,13 @@ Board::~Board()
 // Méthode d'initialisation du plateau
 void Board::init()
 {
+    // Définir une couleur aléatoire pour les cases
+    double randomColorR = (globalRandom.uniformContinuous(0, 200));
+    double randomColorV = (globalRandom.uniformContinuous(0, 200));
+    double randomColorB = (globalRandom.uniformContinuous(0, 200));
+    squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
+    std::cout << randomColorB << "      " << randomColorR << std::endl;
+
     grid.resize(8, std::vector<Piece*>(8, nullptr));
 
     // Placer les pièces blanches (en bas sur la ligne 0)
@@ -141,6 +126,7 @@ void Board::render()
 // Dessiner les cases de l'échiquier
 void Board::renderBoardSquares()
 {
+    // double randomColor = (globalRandom.uniformContinuous(10, 255));
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
@@ -148,7 +134,7 @@ void Board::renderBoardSquares()
             ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size);
 
             // Dessiner les cases
-            ImU32 color = (x + y) % 2 == 0 ? IM_COL32(119, 148, 85, 255) : IM_COL32(240, 217, 181, 255);
+            ImU32 color = (x + y) % 2 == 0 ? squareColor : IM_COL32(240, 217, 181, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }

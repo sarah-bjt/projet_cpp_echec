@@ -1,4 +1,11 @@
+Aléatoire dans le jeu 
 
+Bernouilli : Transformation aléatoir de la couleur d'une piece quand promotion pion
+70% de chance de rester sa couleur
+   
+   
+   
+   
     // Pour une graine spécifique, décommentez la ligne suivante:
     // RandomDistributions random(12345);
 

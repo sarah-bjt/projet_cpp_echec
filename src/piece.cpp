@@ -2,12 +2,11 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include "maths.hpp"
 
 Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std::pair<int, int>& startPosition)
-    : position(startPosition), state(State::Alive)
+    : color(stringToColor(colorStr)), name(stringToName(nameStr)), position(startPosition), state(State::Alive)
 {
-    name  = stringToName(nameStr);
-    color = stringToColor(colorStr);
 }
 
 // Convertir une string en Name
@@ -60,7 +59,9 @@ void Piece::promote(std::string newType, bool aleat)
         name = Name::Knight;
     if (aleat)
     {
-        Color newColor = (globalRandom.bernoulli(0.7) ? Color::Black : Color::White);
+        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
+        std::cout << get_type() << std::endl;
+        color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
     }
 }
 
