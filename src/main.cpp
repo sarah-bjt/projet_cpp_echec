@@ -3,9 +3,16 @@
 #include <functional>
 #include <iostream>
 #include <random>
+#include "glm/glm.hpp"
+#include <iostream>
+#include "lib/glmax/src/Camera.hpp"
+#include "Model3D.hpp"
+#include "Shader.hpp"
 #include "board.hpp" // Inclure le fichier de la classe Board
 #include "glad/glad.h"
 #include "maths.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/fwd.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
 int main()

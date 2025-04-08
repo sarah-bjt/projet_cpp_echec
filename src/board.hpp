@@ -5,6 +5,7 @@
 #include "piece.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
+
 class Board {
 private:
     std::vector<std::vector<Piece*>> grid;                                         // 8x8 pour les pièces
