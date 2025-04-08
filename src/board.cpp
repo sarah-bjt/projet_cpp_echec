@@ -30,7 +30,6 @@ void Board::init()
     double randomColorV = (globalRandom.uniformContinuous(0, 200));
     double randomColorB = (globalRandom.uniformContinuous(0, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
-    std::cout << randomColorB << "      " << randomColorR << std::endl;
 
     grid.resize(8, std::vector<Piece*>(8, nullptr));
 
@@ -166,7 +165,7 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::SetCursorScreenPos(pos);
     std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
 
     if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))

@@ -27,7 +27,7 @@ int main()
             .init = [&]() { board.init(); },
             .loop =
                 [&]() {
-                    // ImGui::ShowDemoWindow();
+                    ImGui::ShowDemoWindow();
                     ImGui::Begin("Chess 2D");
                     board.render();
                     ImGui::End();
