@@ -25,6 +25,23 @@ Board::~Board()
 // Méthode d'initialisation du plateau
 void Board::init()
 {
+    // charge des fonts
+    //  Récupérer l'IO d'ImGui
+    ImGuiIO& io = ImGui::GetIO();
+    // Charger différentes polices
+    float fontSize = 17.0f;
+    font1          = io.Fonts->AddFontDefault();
+    font2          = io.Fonts->AddFontFromFileTTF("../../import/font/DroidSans.ttf", fontSize);
+    font3          = io.Fonts->AddFontFromFileTTF("../../import/font/Cousine-Regular.ttf", fontSize);
+    font4          = io.Fonts->AddFontFromFileTTF("../../import/font/ReggaeOne-Regular.ttf", fontSize);
+    font5          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyClean.ttf", fontSize);
+    font6          = io.Fonts->AddFontFromFileTTF("../../import/font/Karla-Regular.ttf", fontSize);
+    font7          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyTiny.ttf", fontSize);
+    font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
+    io.Fonts->Build();
+
+    // ImFont* randomFont = font3;
+
     // Définir une couleur aléatoire pour les cases
     double randomColorR = (globalRandom.uniformContinuous(0, 200));
     double randomColorV = (globalRandom.uniformContinuous(0, 200));
@@ -165,6 +182,8 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::SetCursorScreenPos(pos);
     std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
 
+    ImGui::PushFont(font3);
+
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
 
@@ -174,6 +193,7 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     }
 
     ImGui::PopStyleColor(2);
+    ImGui::PopFont();
 }
 
 // Gérer la sélection d'une pièce
@@ -275,7 +295,7 @@ void Board::handlePromotionPopup()
         ImGui::OpenPopup("Promotion");
     }
 
-    if (ImGui::BeginPopupModal("Promotion", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Text("Choisissez une promotion:");
 

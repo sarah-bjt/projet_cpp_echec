@@ -15,6 +15,9 @@ private:
     std::pair<int, int>              selected_pos           = {-1, -1};            // Position de la pièce sélectionnée
     Piece::Color                     last_moved_piece_color = Piece::Color::Black; // Couleur de la dernière pièce bougé, initialisé à noir
 
+    // polices
+    ImFont *font1, *font2, *font3, *font4, *font5, *font6, *font7, *font8, randomFont;
+
     // pour faire la promo d'un pion
     bool                promotion_active = false; // Indique si la promotion est en cours
     std::pair<int, int> promotion_pos;            // Position du pion à promouvoir
@@ -71,6 +74,5 @@ public:
 
     bool is_game_over();
 
-    // Fonction pour obtenir le label du bouton d'une pièce (ex. "PW", "PN", "RW", "RN", etc.)
     std::string getPieceButtonLabel(const std::string& piece_type, const std::string& color);
 };
