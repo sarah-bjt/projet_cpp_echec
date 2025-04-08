@@ -1,80 +1,80 @@
 #include "Skybox.hpp"
 #include <iostream>
-#include <stb_image.h>  // Pour charger les images
+#include <stb_image.h>
 
 Skybox::Skybox()
-    : m_skyboxTexture(0) {}
+    : m_skyboxTexture(0)
+{
+    // Constructeur : initialisation de la skybox
+}
 
-Skybox::~Skybox() {
+Skybox::~Skybox()
+{
+    // Destruction : nettoyer les ressources de la skybox
     glDeleteTextures(1, &m_skyboxTexture);
 }
 
-void Skybox::init(const std::vector<std::string>& faces) {
-    setupSkyboxData();
-    loadCubemap(faces);
-}
-
-void Skybox::setupSkyboxData() {
-    // Définir les sommets de la skybox (un cube)
-    GLfloat skyboxVertices[] = {
+void Skybox::setupSkyboxData()
+{
+    // Vertices du cube pour la skybox
+    float skyboxVertices[] = {
+        // Positions des coins du cube
         -1.0f,  1.0f, -1.0f,
         -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
         -1.0f, -1.0f,  1.0f,
         -1.0f,  1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f, -1.0f
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
     };
 
+    unsigned int skyboxIndices[] = {
+        0, 1, 2, 0, 2, 3,  // Face avant
+        3, 2, 6, 3, 6, 7,  // Face droite
+        7, 6, 5, 7, 5, 4,  // Face arrière
+        4, 5, 1, 4, 1, 0,  // Face gauche
+        5, 6, 2, 5, 2, 1,  // Face bas
+        4, 0, 3, 4, 3, 7   // Face haut
+    };
+
+    // Initialisation des buffers et du VAO
     m_vao.init();
     m_vbo.init();
     m_ebo.init();
 
     m_vbo.set_data(skyboxVertices, sizeof(skyboxVertices));
+    m_ebo.set_data(skyboxIndices, sizeof(skyboxIndices));
+
     m_vao.bind();
     m_vbo.bind();
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-
-    // Pas de données d'index pour la skybox
     m_ebo.bind();
-    GLuint indices[] = { 0, 1, 3, 1, 2, 3, 3, 2, 7, 2, 6, 7, 7, 6, 4, 6, 5, 4, 4, 5, 0, 5, 1, 0, 1, 5, 4, 0, 4, 3, 4, 7, 3, 7, 2, 3, 2, 6, 2, 1, 6, 5, 1, 5, 3, 5, 7, 3 };
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     m_vao.unbind();
+    m_vbo.unbind();
+    m_ebo.unbind();
 }
 
-void Skybox::loadCubemap(const std::vector<std::string>& faces) {
+void Skybox::loadCubemap(const std::vector<std::string>& faces)
+{
     glGenTextures(1, &m_skyboxTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
 
     int width, height, nrChannels;
-    for (GLuint i = 0; i < faces.size(); i++) {
-        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-        if (data) {
+    for (GLuint i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
-        } else {
-            std::cerr << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
+            glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
         }
+        else
+        {
+            std::cerr << "Failed to load texture: " << faces[i] << std::endl;
+        }
+        stbi_image_free(data);
     }
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -84,26 +84,25 @@ void Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-void Skybox::render(GLuint shaderProgram, const glm::mat4& projection, const glm::mat4& view) const {
+void Skybox::init(const std::vector<std::string>& faces)
+{
+    setupSkyboxData(); // Configure les données de la skybox (vertices, etc.)
+    loadCubemap(faces); // Charge les textures de la skybox
+}
+
+void Skybox::render(GLuint shaderProgram, const glm::mat4& projection, const glm::mat4& view) const
+{
     glUseProgram(shaderProgram);
 
-    // Calculer la matrice de vue sans la translation
-    glm::mat4 viewNoTranslation = glm::mat4(glm::mat3(view));
+    // Appliquer les matrices de projection et de vue
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_TRUE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_TRUE, glm::value_ptr(view));
 
-    GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
-    GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
-
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewNoTranslation));
-    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
+    // Lier la texture cubemap
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
 
-    // Désactiver l'écriture dans le tampon de profondeur pendant le rendu de la skybox
-    glDepthFunc(GL_LEQUAL);
-
+    // Rendu de la skybox
     m_vao.bind();
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // 36 indices pour un cube
     m_vao.unbind();
-
-    glDepthFunc(GL_LESS);  // Rétablir la fonction de profondeur normale
 }
