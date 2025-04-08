@@ -6,7 +6,7 @@
 #include "glm/glm.hpp"
 #include <iostream>
 #include "lib/glmax/src/Camera.hpp"
-#include "Model3D.hpp"
+#include "3D/Model3D.hpp"
 #include "board.hpp"
 #include "glad/glad.h"
 #include "maths.hpp"
@@ -14,7 +14,7 @@
 #include "glm/fwd.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
-#include "Renderer3D.hpp" // 🔹 Ajouté
+#include "3D/Renderer3D.hpp" // 🔹 Ajouté
 
 int main()
 {
