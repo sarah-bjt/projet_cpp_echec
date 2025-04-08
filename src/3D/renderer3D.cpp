@@ -4,37 +4,103 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 Renderer3D::Renderer3D()
-    : m_shaderProgram(0)
+    : m_shaderProgram(0), m_boardShader(0), m_boardVAO(0), m_boardVBO(0), m_boardEBO(0)
 {}
+
+Renderer3D::~Renderer3D()
+{
+    glDeleteVertexArrays(1, &m_boardVAO);
+    glDeleteBuffers(1, &m_boardVBO);
+    glDeleteBuffers(1, &m_boardEBO);
+    glDeleteProgram(m_shaderProgram);
+    glDeleteProgram(m_boardShader);
+}
 
 void Renderer3D::init()
 {
-    // Chargement et compilation du shader de skybox
+    // === Skybox shaders ===
     GLuint vs = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/skybox.vs.glsl", GL_VERTEX_SHADER);
     GLuint fs = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/skybox.fs.glsl", GL_FRAGMENT_SHADER);
     m_shaderProgram = linkProgram(vs, fs);
 
-    // Textures de la skybox (assure-toi que les chemins sont corrects)
     std::vector<std::string> faces = {
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/right.png",
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/left.png",
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/up.png",
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/down.png",
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/front.png",
-        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/back.png"
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/right.bmp",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/left.bmp",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/up.bmp",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/down.bmp",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/front.bmp",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/back.bmp"
     };
 
     m_skybox.init(faces);
+    std::cout << "Skybox loaded!" << std::endl;
+
+    // === Plateau 3D ===
+    if (!m_boardModel.loadFromFile("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/models/board/board.obj")) {
+        std::cerr << "Erreur : Impossible de charger le modèle du plateau." << std::endl;
+        return;
+    }
+
+    GLuint boardVS = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/board.vs.glsl", GL_VERTEX_SHADER);
+    GLuint boardFS = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/board.fs.glsl", GL_FRAGMENT_SHADER);
+    m_boardShader = linkProgram(boardVS, boardFS);
+
+    glGenVertexArrays(1, &m_boardVAO);
+    glGenBuffers(1, &m_boardVBO);
+    glGenBuffers(1, &m_boardEBO);
+
+    glBindVertexArray(m_boardVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_boardVBO);
+    glBufferData(GL_ARRAY_BUFFER, m_boardModel.getVertices().size() * sizeof(Vertex), m_boardModel.getVertices().data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_boardEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_boardModel.getIndices().size() * sizeof(uint32_t), m_boardModel.getIndices().data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
+    glBindVertexArray(0);
 }
 
 void Renderer3D::render(const glm::mat4& projection, const glm::mat4& view)
 {
-    glDepthFunc(GL_LEQUAL); // Important pour que la skybox s'affiche correctement
-    glm::mat4 skyboxView = glm::mat4(glm::mat3(view)); // Supprime la translation
+    // Clear buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // === Skybox ===
+    glDepthFunc(GL_LEQUAL);
+    glm::mat4 skyboxView = glm::mat4(glm::mat3(view));
     m_skybox.render(m_shaderProgram, projection, skyboxView);
-    glDepthFunc(GL_LESS); // Reset pour le reste de la scène
+    glDepthFunc(GL_LESS);
+
+    // === Plateau ===
+    glUseProgram(m_boardShader);
+
+    GLuint projLoc = glGetUniformLocation(m_boardShader, "uProjection");
+    GLuint viewLoc = glGetUniformLocation(m_boardShader, "uView");
+    GLuint modelLoc = glGetUniformLocation(m_boardShader, "uModel");
+
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    glBindVertexArray(m_boardVAO);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_boardModel.getIndices().size()), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)

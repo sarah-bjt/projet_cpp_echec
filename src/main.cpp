@@ -5,7 +5,6 @@
 #include <random>
 #include "glm/glm.hpp"
 #include <iostream>
-#include "lib/glmax/src/Camera.hpp"
 #include "3D/Model3D.hpp"
 #include "board.hpp"
 #include "glad/glad.h"
@@ -31,6 +30,7 @@ int main()
             .init = [&]() {
                 // board.init();
                 renderer.init(); // 🔹 Initialisation du renderer
+                glEnable(GL_DEPTH_TEST);
             },
             .loop = [&]() {
                 // 🔸 Partie ImGui désactivée pour le moment
