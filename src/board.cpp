@@ -10,6 +10,43 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 // Constructeur
 Board::Board()
 {
+    // Initialiser la position du plateau sur l'écran
+    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
+
+    // Définir la taille des cases
+    square_size = 60; // Taille en pixels de chaque case
+
+    // Initialiser les variables de sélection
+    selected_piece = false;
+    selected_pos   = {-1, -1};
+
+    // Initialiser les variables de promotion
+    promotion_active = false;
+    promoted_piece   = nullptr;
+
+    // Initialiser la couleur de la dernière pièce déplacée
+    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
+    last_moved_piece_color = Piece::Color::Black;
+
+    // Autres initialisations éventuelles
+    std::cout << "Plateau d'échecs initialisé" << std::endl;
+}
+
+// Destructeur
+Board::~Board()
+{
+    for (auto& row : grid)
+    {
+        for (auto& piece : row)
+        {
+            delete piece;
+        }
+    }
+}
+
+// Méthode d'initialisation du plateau
+void Board::init()
+{
     grid.resize(8, std::vector<Piece*>(8, nullptr));
 
     // Placer les pièces blanches (en bas sur la ligne 0)
@@ -43,43 +80,6 @@ Board::Board()
     {
         placePiece(new Piece("Pawn", "Black", {x, 6}), x, 6);
     }
-}
-
-// Destructeur
-Board::~Board()
-{
-    for (auto& row : grid)
-    {
-        for (auto& piece : row)
-        {
-            delete piece;
-        }
-    }
-}
-
-// Méthode d'initialisation du plateau
-void Board::init()
-{
-    // Initialiser la position du plateau sur l'écran
-    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
-
-    // Définir la taille des cases
-    square_size = 60; // Taille en pixels de chaque case
-
-    // Initialiser les variables de sélection
-    selected_piece = false;
-    selected_pos   = {-1, -1};
-
-    // Initialiser les variables de promotion
-    promotion_active = false;
-    promoted_piece   = nullptr;
-
-    // Initialiser la couleur de la dernière pièce déplacée
-    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
-    last_moved_piece_color = Piece::Color::Black;
-
-    // Autres initialisations éventuelles
-    std::cout << "Plateau d'échecs initialisé" << std::endl;
 }
 
 // Placer une pièce sur une case donnée

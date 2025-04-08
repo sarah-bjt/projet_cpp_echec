@@ -60,11 +60,7 @@ void Piece::promote(std::string newType, bool aleat)
         name = Name::Knight;
     if (aleat)
     {
-        bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
-        if (newColor)
-        {
-            color = Color::Black;
-        }
+        Color newColor = (globalRandom.bernoulli(0.7) ? Color::Black : Color::White);
     }
 }
 
