@@ -12,18 +12,18 @@ Renderer3D::Renderer3D()
 void Renderer3D::init()
 {
     // Chargement et compilation du shader de skybox
-    GLuint vs = compileShader("assets/shaders/skybox.vs.glsl", GL_VERTEX_SHADER);
-    GLuint fs = compileShader("assets/shaders/skybox.fs.glsl", GL_FRAGMENT_SHADER);
+    GLuint vs = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/skybox.vs.glsl", GL_VERTEX_SHADER);
+    GLuint fs = compileShader("C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/shaders/skybox.fs.glsl", GL_FRAGMENT_SHADER);
     m_shaderProgram = linkProgram(vs, fs);
 
     // Textures de la skybox (assure-toi que les chemins sont corrects)
     std::vector<std::string> faces = {
-        "assets/skybox/right.png",
-        "assets/skybox/left.png",
-        "assets/skybox/top.png",
-        "assets/skybox/bottom.png",
-        "assets/skybox/front.png",
-        "assets/skybox/back.png"
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/right.png",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/left.png",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/up.png",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/down.png",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/front.png",
+        "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/skybox/back.png"
     };
 
     m_skybox.init(faces);

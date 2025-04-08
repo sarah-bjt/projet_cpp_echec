@@ -7,7 +7,6 @@
 #include <iostream>
 #include "lib/glmax/src/Camera.hpp"
 #include "Model3D.hpp"
-// #include "Shader.hpp"
 #include "board.hpp"
 #include "glad/glad.h"
 #include "maths.hpp"
@@ -35,9 +34,9 @@ int main()
             },
             .loop = [&]() {
                 // 🔸 Partie ImGui désactivée pour le moment
-                // ImGui::Begin("Chess 2D");
-                // board.render();
-                // ImGui::End();
+                ImGui::Begin("Chess 2D");
+                board.render();
+                ImGui::End();
 
                 // 🔹 Matrices de projection et vue
                 glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.f / 720.f, 0.1f, 100.0f);

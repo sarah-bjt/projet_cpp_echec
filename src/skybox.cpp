@@ -43,17 +43,17 @@ void Skybox::setupSkyboxData()
     m_vbo.init();
     m_ebo.init();
 
+    m_vao.bind(); // Lier AVANT de remplir les buffers
+    m_vbo.bind();
     m_vbo.set_data(skyboxVertices, sizeof(skyboxVertices));
+
+    m_ebo.bind();
     m_ebo.set_data(skyboxIndices, sizeof(skyboxIndices));
 
-    m_vao.bind();
-    m_vbo.bind();
-    m_ebo.bind();
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
     m_vao.unbind();
-    m_vbo.unbind();
-    m_ebo.unbind();
 }
 
 void Skybox::loadCubemap(const std::vector<std::string>& faces)
@@ -67,7 +67,7 @@ void Skybox::loadCubemap(const std::vector<std::string>& faces)
         unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
         }
         else
@@ -95,8 +95,9 @@ void Skybox::render(GLuint shaderProgram, const glm::mat4& projection, const glm
     glUseProgram(shaderProgram);
 
     // Appliquer les matrices de projection et de vue
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_TRUE, glm::value_ptr(projection));
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_TRUE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    
 
     // Lier la texture cubemap
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
