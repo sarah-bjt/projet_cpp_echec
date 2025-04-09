@@ -5,9 +5,13 @@
 #include "piece.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
-
 class Board {
 private:
+    // polices
+    ImFont *font1, *font2, *font3, *font4, *font5, *font6, *font7, *font8, randomFont;
+    int     chosenFontIndex; // Pour stocker l'indice de la police choisie
+    ImFont* chosenFont;      // Pour stocker la police choisie
+
     std::vector<std::vector<Piece*>> grid;                                         // 8x8 pour les pièces
     ImVec2                           board_pos      = ImVec2(50, 50);              // Position de l'interface du plateau
     float                            square_size    = 50.0f;                       // Taille d'une case en pixels

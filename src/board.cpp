@@ -1,4 +1,7 @@
+#include <imgui.h>
 #include <board.hpp>
+#include <vector>
+#include "maths.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -60,6 +63,21 @@ Board::~Board()
 // Méthode d'initialisation du plateau
 void Board::init()
 {
+    // charge des fonts
+    //  Récupérer l'IO d'ImGui
+    ImGuiIO& io = ImGui::GetIO();
+    // Charger différentes polices
+    float fontSize = 17.0f;
+    font1          = io.Fonts->AddFontDefault();
+    font2          = io.Fonts->AddFontFromFileTTF("../../import/font/DroidSans.ttf", fontSize);
+    font3          = io.Fonts->AddFontFromFileTTF("../../import/font/Cousine-Regular.ttf", fontSize);
+    font4          = io.Fonts->AddFontFromFileTTF("../../import/font/ReggaeOne-Regular.ttf", fontSize);
+    font5          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyClean.ttf", fontSize);
+    font6          = io.Fonts->AddFontFromFileTTF("../../import/font/Karla-Regular.ttf", fontSize);
+    font7          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyTiny.ttf", fontSize);
+    font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
+    io.Fonts->Build();
+
     // Initialiser la position du plateau sur l'écran
     board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
 
