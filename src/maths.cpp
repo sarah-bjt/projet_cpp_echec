@@ -6,7 +6,6 @@ RandomDistributions::RandomDistributions()
 {
     seed = static_cast<unsigned>(time(nullptr));
     srand(seed);
-    std::cout << "Graine initialisée avec: " << seed << std::endl;
 }
 
 // Constructeur avec graine spécifiée
@@ -14,8 +13,10 @@ RandomDistributions::RandomDistributions(unsigned seed)
     : seed(seed), hasSpareNormal(false), spareNormal(0.0)
 {
     srand(seed);
-    std::cout << "Graine initialisée avec: " << seed << std::endl;
 }
+
+// Variable globale accessible depuis n'importe où
+RandomDistributions globalRandom;
 
 // Génère un nombre aléatoire entre 0 et 1
 double RandomDistributions::getUniformUnit()
@@ -193,61 +194,58 @@ double RandomDistributions::gamma(double k, double theta)
     }
 }
 
-// Méthode pour générer et afficher plusieurs échantillons
-void RandomDistributions::generateSamples(int count)
-{
-    std::cout << "\n==== Échantillons des 8 distributions (n=" << count << ") ====\n";
+// // Méthode pour générer et afficher plusieurs échantillons
+// void RandomDistributions::generateSamples(int count)
+// {
+//     std::cout << "\n==== Échantillons des 8 distributions (n=" << count << ") ====\n";
 
-    std::cout << "\n1. Distribution uniforme discrète [1, 6]:\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << uniformDiscrete(1, 6) << " ";
-    }
+//     std::cout << "\n1. Distribution uniforme discrète [1, 6]:\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << uniformDiscrete(1, 6) << " ";
+//     }
 
-    std::cout << "\n\n2. Distribution de Bernoulli (p=0.3):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << (bernoulli(0.3) ? "1" : "0") << " ";
-    }
+//     std::cout << "\n\n2. Distribution de Bernoulli (p=0.3):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << (bernoulli(0.3) ? "1" : "0") << " ";
+//     }
 
-    std::cout << "\n\n3. Distribution binomiale (n=10, p=0.3):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << binomial(10, 0.3) << " ";
-    }
+//     std::cout << "\n\n3. Distribution binomiale (n=10, p=0.3):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << binomial(10, 0.3) << " ";
+//     }
 
-    std::cout << "\n\n4. Distribution géométrique (p=0.2):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << geometric(0.2) << " ";
-    }
+//     std::cout << "\n\n4. Distribution géométrique (p=0.2):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << geometric(0.2) << " ";
+//     }
 
-    std::cout << "\n\n5. Distribution uniforme continue [0, 1]:\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << uniformContinuous(0, 1) << " ";
-    }
+//     std::cout << "\n\n5. Distribution uniforme continue [0, 1]:\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << uniformContinuous(0, 1) << " ";
+//     }
 
-    std::cout << "\n\n6. Distribution exponentielle (lambda=2):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << exponential(2.0) << " ";
-    }
+//     std::cout << "\n\n6. Distribution exponentielle (lambda=2):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << exponential(2.0) << " ";
+//     }
 
-    std::cout << "\n\n7. Distribution normale (mean=0, stddev=1):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << normal(0.0, 1.0) << " ";
-    }
+//     std::cout << "\n\n7. Distribution normale (mean=0, stddev=1):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << normal(0.0, 1.0) << " ";
+//     }
 
-    std::cout << "\n\n8. Distribution gamma (k=2.0, theta=1.5):\n";
-    for (int i = 0; i < count; ++i)
-    {
-        std::cout << gamma(2.0, 1.5) << " ";
-    }
+//     std::cout << "\n\n8. Distribution gamma (k=2.0, theta=1.5):\n";
+//     for (int i = 0; i < count; ++i)
+//     {
+//         std::cout << gamma(2.0, 1.5) << " ";
+//     }
 
-    std::cout << std::endl;
-}
-
-// Variable globale accessible depuis n'importe où
-RandomDistributions globalRandom;
+//     std::cout << std::endl;
+// }

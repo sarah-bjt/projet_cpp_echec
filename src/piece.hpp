@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "maths.hpp"
+#include "random.hpp"
 
 class Piece {
 public:

@@ -47,21 +47,61 @@ void Piece::set_state(State newState)
     this->state = newState;
 }
 
+// void Piece::promote(std::string newType, bool aleat)
+// {
+//     if (newType == "Queen")
+//         name = Name::Queen;
+//     else if (newType == "Rook")
+//         name = Name::Rook;
+//     else if (newType == "Bishop")
+//         name = Name::Bishop;
+//     else if (newType == "Knight")
+//         name = Name::Knight;
+//     if (aleat)
+//     {
+//         name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
+//         std::cout << get_type() << std::endl;
+//         color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
+//     }
+// }
+
 void Piece::promote(std::string newType, bool aleat)
 {
-    if (newType == "Queen")
-        name = Name::Queen;
-    else if (newType == "Rook")
-        name = Name::Rook;
-    else if (newType == "Bishop")
-        name = Name::Bishop;
-    else if (newType == "Knight")
-        name = Name::Knight;
-    if (aleat)
+    if (!aleat)
     {
-        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
-        std::cout << get_type() << std::endl;
-        color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
+        // Comportement normal
+        if (newType == "Queen")
+            name = Name::Queen;
+        else if (newType == "Rook")
+            name = Name::Rook;
+        else if (newType == "Bishop")
+            name = Name::Bishop;
+        else if (newType == "Knight")
+            name = Name::Knight;
+    }
+    else
+    {
+        // Utilisation du randomizer
+        std::string randomPieceName;
+        bool        changeColor = false;
+
+        ChessRandomizer::randomizePromotion(randomPieceName, changeColor);
+
+        // Appliquer le type de pièce
+        if (randomPieceName == "Queen")
+            name = Name::Queen;
+        else if (randomPieceName == "Rook")
+            name = Name::Rook;
+        else if (randomPieceName == "Bishop")
+            name = Name::Bishop;
+        else if (randomPieceName == "Knight")
+            name = Name::Knight;
+
+        // Appliquer la couleur si elle a changé
+        if (changeColor)
+        {
+            color = (color == Color::White) ? Color::Black : Color::White;
+        }
     }
 }
 

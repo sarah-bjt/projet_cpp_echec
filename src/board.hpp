@@ -7,6 +7,8 @@
 
 class Board {
 private:
+    bool activate_random = false;
+
     std::vector<std::vector<Piece*>> grid;                         // 8x8 pour les pièces
     ImVec2                           board_pos   = ImVec2(50, 50); // Position de l'interface du plateau
     float                            square_size = 60.0f;          // Taille d'une case en pixels
@@ -17,6 +19,8 @@ private:
 
     // polices
     ImFont *font1, *font2, *font3, *font4, *font5, *font6, *font7, *font8, randomFont;
+    int     chosenFontIndex; // Pour stocker l'indice de la police choisie
+    ImFont* chosenFont;      // Pour stocker la police choisie
 
     // pour faire la promo d'un pion
     bool                promotion_active = false; // Indique si la promotion est en cours
@@ -36,6 +40,7 @@ private:
     void handleMoveSelection(const std::pair<int, int>& move);
     void handlePromotionPopup();
     void handleGameOverPopup();
+    void handleRandom();
     void promotePawn(const std::string& pieceType, bool aleat);
 
     // Méthodes de logique de jeu

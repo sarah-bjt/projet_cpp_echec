@@ -40,6 +40,25 @@ void Board::init()
     font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
     io.Fonts->Build();
 
+    // Choisir une police aléatoire une seule fois
+    chosenFontIndex = globalRandom.uniformDiscrete(1, 8);
+
+    // Assigner la police choisie
+    switch (chosenFontIndex)
+    {
+    case 1: chosenFont = font1; break;
+    case 2: chosenFont = font2; break;
+    case 3: chosenFont = font3; break;
+    case 4: chosenFont = font4; break;
+    case 5: chosenFont = font5; break;
+    case 6: chosenFont = font6; break;
+    case 7: chosenFont = font7; break;
+    case 8: chosenFont = font8; break;
+    default: chosenFont = font1; // Police par défaut
+    }
+
+    std::cout << "Police choisie : " << chosenFontIndex << std::endl;
+
     // ImFont* randomFont = font3;
 
     // Définir une couleur aléatoire pour les cases
@@ -126,6 +145,7 @@ bool Board::is_game_over()
 // Afficher le plateau
 void Board::render()
 {
+    handleRandom();
     renderBoardSquares();
     renderPieces();
 
@@ -182,7 +202,8 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::SetCursorScreenPos(pos);
     std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
 
-    ImGui::PushFont(font3);
+    // ImGui::PushFont(font3);
+    ImGui::PushFont(chosenFont);
 
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
@@ -432,4 +453,14 @@ bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& posit
 bool Board::is_piece_at(const std::pair<int, int>& pos)
 {
     return grid[pos.first][pos.second] != nullptr;
+}
+
+void Board::handleRandom()
+{
+    ImGui::SetCursorPos(ImVec2(10, 10)); // Positionnez le bouton où vous voulez
+    if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
+    {
+        activate_random = !activate_random;
+        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+    }
 }
