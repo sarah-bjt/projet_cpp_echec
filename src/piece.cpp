@@ -1,13 +1,14 @@
+// piece.cpp
+
 #include "piece.hpp"
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include "maths.hpp"
 
 Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std::pair<int, int>& startPosition)
-    : position(startPosition), state(State::Alive)
+    : color(stringToColor(colorStr)), name(stringToName(nameStr)), position(startPosition), state(State::Alive)
 {
-    name  = stringToName(nameStr);
-    color = stringToColor(colorStr);
 }
 
 // Convertir une string en Name
@@ -48,22 +49,60 @@ void Piece::set_state(State newState)
     this->state = newState;
 }
 
+// void Piece::promote(std::string newType, bool aleat)
+// {
+//     if (newType == "Queen")
+//         name = Name::Queen;
+//     else if (newType == "Rook")
+//         name = Name::Rook;
+//     else if (newType == "Bishop")
+//         name = Name::Bishop;
+//     else if (newType == "Knight")
+//         name = Name::Knight;
+//     if (aleat)
+//     {
+//         name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
+//         std::cout << get_type() << std::endl;
+//         color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
+//     }
+// }
+
 void Piece::promote(std::string newType, bool aleat)
 {
-    if (newType == "Queen")
-        name = Name::Queen;
-    else if (newType == "Rook")
-        name = Name::Rook;
-    else if (newType == "Bishop")
-        name = Name::Bishop;
-    else if (newType == "Knight")
-        name = Name::Knight;
-    if (aleat)
+    if (!aleat)
     {
-        bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
-        if (newColor)
+        // Comportement normal
+        if (newType == "Queen")
+            name = Name::Queen;
+        else if (newType == "Rook")
+            name = Name::Rook;
+        else if (newType == "Bishop")
+            name = Name::Bishop;
+        else if (newType == "Knight")
+            name = Name::Knight;
+    }
+    else
+    {
+        // Utilisation du randomizer
+        std::string randomPieceName;
+        bool        changeColor = false;
+
+        ChessRandomizer::randomizePromotion(randomPieceName, changeColor);
+
+        // Appliquer le type de pièce
+        if (randomPieceName == "Queen")
+            name = Name::Queen;
+        else if (randomPieceName == "Rook")
+            name = Name::Rook;
+        else if (randomPieceName == "Bishop")
+            name = Name::Bishop;
+        else if (randomPieceName == "Knight")
+            name = Name::Knight;
+
+        // Appliquer la couleur si elle a changé
+        if (changeColor)
         {
-            color = Color::Black;
+            color = (color == Color::White) ? Color::Black : Color::White;
         }
     }
 }

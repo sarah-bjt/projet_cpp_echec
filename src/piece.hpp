@@ -1,8 +1,11 @@
+// piece.hpp
+
 #pragma once
 #include <iostream>
 #include <string>
 #include <vector>
 #include "maths.hpp"
+#include "random.hpp"
 
 class Piece {
 public:
