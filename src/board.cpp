@@ -4,6 +4,7 @@
 
 #include <imgui.h>
 #include <board.hpp>
+#include <string>
 #include <vector>
 #include "maths.hpp"
 
@@ -108,8 +109,9 @@ void Board::placePiece(Piece* piece, int x, int y)
 }
 
 // Vérifier si le jeu est terminé
-bool Board::is_game_over()
+std::pair<bool, int> Board::is_game_over()
 {
+    int  whoWin         = 0; // 0 = personne, 1 = noir, 2 = blanc
     bool whiteKingAlive = false;
     bool blackKingAlive = false;
 
@@ -133,12 +135,18 @@ bool Board::is_game_over()
     }
 
     // Si l'un des rois est mort, la partie est finie
-    if (!whiteKingAlive || !blackKingAlive)
+    if (!whiteKingAlive)
     {
-        return true; // La partie est terminée
+        whoWin = 1;            // les noirs ont gagné
+        return {true, whoWin}; // La partie est terminée
+    }
+    if (!blackKingAlive)
+    {
+        whoWin = 2;            // les blancs ont gagné
+        return {true, whoWin}; // La partie est terminée
     }
 
-    return false;
+    return {false, whoWin}; // La partie n'est pas terminée
 }
 
 // Afficher le plateau
@@ -353,23 +361,92 @@ void Board::promotePawn(const std::string& pieceType, bool aleat)
 }
 
 // Gérer la popup de fin de partie
+// void Board::handleGameOverPopup()
+// {
+//     if (is_game_over())
+//     {
+//         ImGui::OpenPopup("Game Over");
+//     }
+
+//     if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+//     {
+//         ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+
+//         if (ImGui::Button("Quitter"))
+//         {
+//             exit(0); // Ferme le programme
+//         }
+
+//         ImGui::EndPopup();
+//     }
+// }
+
 void Board::handleGameOverPopup()
 {
-    if (is_game_over())
+    if (is_game_over().first)
     {
-        ImGui::OpenPopup("Game Over");
-    }
+        std::string winner;
+        switch (is_game_over().second)
+        {
+        case 1: winner = "Black"; break;
+        case 2: winner = "White"; break;
+        default: break;
+        };
 
-    if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+        // Obtenir les dimensions de la fenêtre
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        ImVec2 windowPos  = ImGui::GetWindowPos();
 
-        if (ImGui::Button("Quitter"))
+        // Créer un fond semi-transparent sur tout l'écran
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            windowPos,
+            ImVec2(windowPos.x + windowSize.x, windowPos.y + windowSize.y),
+            IM_COL32(0, 0, 0, 200) // Noir semi-transparent
+        );
+
+        // Calculer la position pour le texte de fin de jeu
+        ImVec2 textPos = ImVec2(
+            windowPos.x + windowSize.x * 0.5f,
+            windowPos.y + windowSize.y * 0.4f
+        );
+
+        // Taille du texte et couleur
+        float textSize    = 72.0f;
+        ImU32 textColor   = winner == "White" ? IM_COL32(220, 220, 220, 255) : IM_COL32(50, 50, 50, 255);
+        ImU32 shadowColor = IM_COL32(0, 0, 0, 150);
+
+        // Texte principal avec effet d'ombre
+        std::string gameOverText = winner + " Wins!";
+
+        // // Ajouter l'ombre du texte
+        // ImGui::GetWindowDrawList()->AddText(
+        //     chosenFont,
+        //     textSize,
+        //     ImVec2(textPos.x - textSize * 2.5f + 3, textPos.y + 3), // Décalage de l'ombre
+        //     shadowColor,
+        //     gameOverText.c_str()
+        // );
+
+        // Ajouter le texte principal
+        ImGui::GetWindowDrawList()->AddText(
+            chosenFont,
+            textSize,
+            ImVec2(textPos.x - textSize * 2.5f, textPos.y),
+            textColor,
+            gameOverText.c_str()
+        );
+
+        // Ajouter un bouton pour quitter
+        ImVec2 buttonPos = ImVec2(
+            windowPos.x + windowSize.x * 0.5f - 50,
+            windowPos.y + windowSize.y * 0.6f
+        );
+
+        ImGui::SetCursorScreenPos(buttonPos);
+        if (ImGui::Button("Quit Game", ImVec2(100, 40)))
         {
             exit(0); // Ferme le programme
         }
-
-        ImGui::EndPopup();
     }
 }
 
