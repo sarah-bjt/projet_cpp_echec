@@ -157,7 +157,7 @@ GLuint Renderer3D::linkProgram(GLuint vs, GLuint fs)
         char log[512];
         glGetProgramInfoLog(program, 512, nullptr, log);
         std::cerr << "Program linking failed:\n" << log << std::endl;
-    }
+    } //
 
     glValidateProgram(program);
     glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
