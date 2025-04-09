@@ -1,3 +1,7 @@
+// le gentil board.cpp
+
+// board.cpp
+
 #include <imgui.h>
 #include <board.hpp>
 #include <vector>
@@ -9,44 +13,6 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
     return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 } // namespace
-
-// Constructeur
-Board::Board()
-{
-    grid.resize(8, std::vector<Piece*>(8, nullptr));
-
-    // Placer les pièces blanches (en bas sur la ligne 0)
-    placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
-    placePiece(new Piece("Rook", "White", {7, 0}), 7, 0);
-    placePiece(new Piece("Knight", "White", {1, 0}), 1, 0);
-    placePiece(new Piece("Knight", "White", {6, 0}), 6, 0);
-    placePiece(new Piece("Bishop", "White", {2, 0}), 2, 0);
-    placePiece(new Piece("Bishop", "White", {5, 0}), 5, 0);
-    placePiece(new Piece("Queen", "White", {3, 0}), 3, 0);
-    placePiece(new Piece("King", "White", {4, 0}), 4, 0);
-
-    // Placer les pions blancs (en ligne 1)
-    for (int x = 0; x < 8; ++x)
-    {
-        placePiece(new Piece("Pawn", "White", {x, 1}), x, 1);
-    }
-
-    // Placer les pièces noires (en haut sur la ligne 7)
-    placePiece(new Piece("Rook", "Black", {0, 7}), 0, 7);
-    placePiece(new Piece("Rook", "Black", {7, 7}), 7, 7);
-    placePiece(new Piece("Knight", "Black", {1, 7}), 1, 7);
-    placePiece(new Piece("Knight", "Black", {6, 7}), 6, 7);
-    placePiece(new Piece("Bishop", "Black", {2, 7}), 2, 7);
-    placePiece(new Piece("Bishop", "Black", {5, 7}), 5, 7);
-    placePiece(new Piece("Queen", "Black", {3, 7}), 3, 7);
-    placePiece(new Piece("King", "Black", {4, 7}), 4, 7);
-
-    // Placer les pions noirs (en ligne 6)
-    for (int x = 0; x < 8; ++x)
-    {
-        placePiece(new Piece("Pawn", "Black", {x, 6}), x, 6);
-    }
-}
 
 // Destructeur
 Board::~Board()
@@ -78,26 +44,64 @@ void Board::init()
     font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
     io.Fonts->Build();
 
-    // Initialiser la position du plateau sur l'écran
-    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
+    // Choisir une police aléatoire une seule fois
+    chosenFontIndex = globalRandom.uniformDiscrete(1, 8);
 
-    // Définir la taille des cases
-    square_size = 60; // Taille en pixels de chaque case
+    // Assigner la police choisie
+    switch (chosenFontIndex)
+    {
+    case 1: chosenFont = font1; break;
+    case 2: chosenFont = font2; break;
+    case 3: chosenFont = font3; break;
+    case 4: chosenFont = font4; break;
+    case 5: chosenFont = font5; break;
+    case 6: chosenFont = font6; break;
+    case 7: chosenFont = font7; break;
+    case 8: chosenFont = font8; break;
+    default: chosenFont = font1; // Police par défaut
+    }
 
-    // Initialiser les variables de sélection
-    selected_piece = false;
-    selected_pos   = {-1, -1};
+    std::cout << "Police choisie : " << chosenFontIndex << std::endl;
 
-    // Initialiser les variables de promotion
-    promotion_active = false;
-    promoted_piece   = nullptr;
+    // Définir une couleur aléatoire pour les cases
+    double randomColorR = (globalRandom.uniformContinuous(0, 200));
+    double randomColorV = (globalRandom.uniformContinuous(0, 200));
+    double randomColorB = (globalRandom.uniformContinuous(0, 200));
+    squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
 
-    // Initialiser la couleur de la dernière pièce déplacée
-    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
-    last_moved_piece_color = Piece::Color::Black;
+    // Placer les pièces blanches (en bas sur la ligne 0)
+    placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
+    placePiece(new Piece("Rook", "White", {7, 0}), 7, 0);
+    placePiece(new Piece("Knight", "White", {1, 0}), 1, 0);
+    placePiece(new Piece("Knight", "White", {6, 0}), 6, 0);
+    placePiece(new Piece("Bishop", "White", {2, 0}), 2, 0);
+    placePiece(new Piece("Bishop", "White", {5, 0}), 5, 0);
+    placePiece(new Piece("Queen", "White", {3, 0}), 3, 0);
+    placePiece(new Piece("King", "White", {4, 0}), 4, 0);
 
-    // Autres initialisations éventuelles
-    std::cout << "Plateau d'échecs initialisé" << std::endl;
+    std::cout << "je suis smart et je mets des pieces" << std::endl;
+
+    // Placer les pions blancs (en ligne 1)
+    for (int x = 0; x < 8; ++x)
+    {
+        placePiece(new Piece("Pawn", "White", {x, 1}), x, 1);
+    }
+
+    // Placer les pièces noires (en haut sur la ligne 7)
+    placePiece(new Piece("Rook", "Black", {0, 7}), 0, 7);
+    placePiece(new Piece("Rook", "Black", {7, 7}), 7, 7);
+    placePiece(new Piece("Knight", "Black", {1, 7}), 1, 7);
+    placePiece(new Piece("Knight", "Black", {6, 7}), 6, 7);
+    placePiece(new Piece("Bishop", "Black", {2, 7}), 2, 7);
+    placePiece(new Piece("Bishop", "Black", {5, 7}), 5, 7);
+    placePiece(new Piece("Queen", "Black", {3, 7}), 3, 7);
+    placePiece(new Piece("King", "Black", {4, 7}), 4, 7);
+
+    // Placer les pions noirs (en ligne 6)
+    for (int x = 0; x < 8; ++x)
+    {
+        placePiece(new Piece("Pawn", "Black", {x, 6}), x, 6);
+    }
 }
 
 // Placer une pièce sur une case donnée
@@ -143,6 +147,7 @@ bool Board::is_game_over()
 // Afficher le plateau
 void Board::render()
 {
+    handleRandom();
     renderBoardSquares();
     renderPieces();
 
@@ -159,6 +164,7 @@ void Board::render()
 // Dessiner les cases de l'échiquier
 void Board::renderBoardSquares()
 {
+    // double randomColor = (globalRandom.uniformContinuous(10, 255));
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
@@ -166,7 +172,7 @@ void Board::renderBoardSquares()
             ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size);
 
             // Dessiner les cases
-            ImU32 color = (x + y) % 2 == 0 ? IM_COL32(119, 148, 85, 255) : IM_COL32(240, 217, 181, 255);
+            ImU32 color = (x + y) % 2 == 0 ? squareColor : IM_COL32(240, 217, 181, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }
@@ -198,7 +204,10 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::SetCursorScreenPos(pos);
     std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+    // ImGui::PushFont(font3);
+    ImGui::PushFont(chosenFont);
+
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
 
     if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
@@ -207,6 +216,7 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     }
 
     ImGui::PopStyleColor(2);
+    ImGui::PopFont();
 }
 
 // Gérer la sélection d'une pièce
@@ -308,7 +318,7 @@ void Board::handlePromotionPopup()
         ImGui::OpenPopup("Promotion");
     }
 
-    if (ImGui::BeginPopupModal("Promotion", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Text("Choisissez une promotion:");
 
@@ -445,4 +455,14 @@ bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& posit
 bool Board::is_piece_at(const std::pair<int, int>& pos)
 {
     return grid[pos.first][pos.second] != nullptr;
+}
+
+void Board::handleRandom()
+{
+    ImGui::SetCursorPos(ImVec2(10, 10)); // Positionnez le bouton où vous voulez
+    if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
+    {
+        activate_random = !activate_random;
+        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+    }
 }
