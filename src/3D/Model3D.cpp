@@ -81,5 +81,6 @@ bool Model3D::loadFromFile(const std::string& filename) {
         return false;
     }
 
+    std::cout << "Modèle chargé avec " << vertices.size() << " vertices et " << indices.size() << " indices." << std::endl;
     return true;
 }

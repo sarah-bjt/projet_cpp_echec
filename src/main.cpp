@@ -4,7 +4,6 @@
 #include <iostream>
 #include <random>
 #include "glm/glm.hpp"
-#include <iostream>
 #include "3D/Model3D.hpp"
 #include "board.hpp"
 #include "glad/glad.h"
@@ -13,57 +12,83 @@
 #include "glm/fwd.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
-#include "3D/Renderer3D.hpp" // 🔹 Ajouté
+#include "3D/Renderer3D.hpp"
+#include "3D/Camera.hpp"  // Inclure la classe Camera
 
 int main()
 {
     // Créer un générateur de nombres aléatoires avec graine par défaut
     RandomDistributions random;
 
+    // Créer une instance de Board et Renderer3D
     Board board;
-    // Board board;
-    Renderer3D renderer; // 🔹 Création du renderer 3D
+    Renderer3D renderer;
+
+    // Initialiser la caméra avec une position (ici, 3 unités en avant sur l'axe Z)
+    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+
+    // Variable pour calculer le deltaTime
+    float lastFrame = 0.0f;
 
     quick_imgui::loop(
-        "Chess 3D",
+        "Chess 3D", 
         {
+            // Initialisation
             .init = [&]() {
-                // board.init();
-                renderer.init(); // 🔹 Initialisation du renderer
-                glEnable(GL_DEPTH_TEST);
+                // Initialiser le rendu 3D
+                renderer.init();
+                glEnable(GL_DEPTH_TEST);  // Activer le test de profondeur
             },
+
+            // Boucle principale
             .loop = [&]() {
-                // 🔸 Partie ImGui désactivée pour le moment
+                // Calcul du temps écoulé depuis le dernier frame pour le deltaTime
+                float currentFrame = static_cast<float>(glfwGetTime());
+                float deltaTime = currentFrame - lastFrame;
+                lastFrame = currentFrame;
+
+                // 🎮 Mouvements de la caméra (clavier)
+                camera.processKeyboard(glfwGetCurrentContext(), deltaTime);
+
+                // Début de la fenêtre ImGui pour afficher le plateau 2D
                 ImGui::Begin("Chess 2D");
                 board.render();
                 ImGui::End();
 
-                // 🔹 Matrices de projection et vue
-                glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1280.f / 720.f, 0.1f, 100.0f);
-                glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-                                             glm::vec3(0.0f, 0.0f, 0.0f),
-                                             glm::vec3(0.0f, 1.0f, 0.0f));
+                // Matrices de transformation
+                glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), 1280.f / 720.f, 0.1f, 100.0f);
+                glm::mat4 view = camera.getViewMatrix();
 
-                renderer.render(projection, view); // 🔹 Rendu de la skybox
+                // Rendu 3D
+                renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera);
             },
+
+            // Callbacks pour les événements de clavier, souris et redimensionnement de fenêtre
             .key_callback = [](int key, int scancode, int action, int mods) {
                 std::cout << "Key: " << key << " Scancode: " << scancode
                           << " Action: " << action << " Mods: " << mods << '\n';
             },
+
             .mouse_button_callback = [](int button, int action, int mods) {
                 std::cout << "Button: " << button << " Action: " << action
                           << " Mods: " << mods << '\n';
             },
-            .cursor_position_callback = [](double xpos, double ypos) {
-                std::cout << "Position: " << xpos << ' ' << ypos << '\n';
+
+            .cursor_position_callback = [&](double xpos, double ypos) {
+                // Traiter le mouvement de la souris pour la caméra
+                camera.processMouseMovement(xpos, ypos); // Mise à jour de la caméra avec les nouveaux mouvements
             },
-            .scroll_callback = [](double xoffset, double yoffset) {
-                std::cout << "Scroll: " << xoffset << ' ' << yoffset << '\n';
+
+            .scroll_callback = [&](double xoffset, double yoffset) {
+                // Traiter le défilement pour le zoom
+                camera.processMouseScroll(yoffset); // Mise à jour du zoom de la caméra
             },
+
             .window_size_callback = [](int width, int height) {
                 std::cout << "Resized: " << width << ' ' << height << '\n';
             },
         }
     );
+
     return 0;
 }
