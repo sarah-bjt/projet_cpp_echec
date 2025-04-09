@@ -3,13 +3,6 @@
 #include <iostream>
 #include <vector>
 
-Piece::Piece(const std::string& nameStr, const std::string& colorStr, const std::pair<int, int>& startPosition)
-    : position(startPosition), state(State::Alive)
-{
-    name  = stringToName(nameStr);
-    color = stringToColor(colorStr);
-}
-
 // Convertir une string en Name
 Piece::Name Piece::stringToName(const std::string& nameStr)
 {
@@ -60,13 +53,31 @@ void Piece::promote(std::string newType, bool aleat)
         name = Name::Knight;
     if (aleat)
     {
-        bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
-        if (newColor)
-        {
-            color = Color::Black;
-        }
+        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
+        std::cout << get_type() << std::endl;
+        color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
     }
 }
+
+// void Piece::promote(std::string newType, bool aleat)
+// {
+//     if (newType == "Queen")
+//         name = Name::Queen;
+//     else if (newType == "Rook")
+//         name = Name::Rook;
+//     else if (newType == "Bishop")
+//         name = Name::Bishop;
+//     else if (newType == "Knight")
+//         name = Name::Knight;
+//     if (aleat)
+//     {
+//         bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
+//         if (newColor)
+//         {
+//             color = Color::Black;
+//         }
+//     }
+// }
 
 Piece::Color Piece::get_color() const
 {
@@ -208,7 +219,6 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             }
         }
     }
-
     case Name::Bishop:
     case Name::Rook:
     case Name::Queen:
@@ -294,5 +304,3 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         std::cout << "Déplacement invalide !" << std::endl;
     }
 }
-
-// Poupoupilou

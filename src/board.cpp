@@ -10,7 +10,7 @@
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 {
-    return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+    return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 } // namespace
 
@@ -78,9 +78,6 @@ void Board::init()
     placePiece(new Piece("Bishop", "White", {5, 0}), 5, 0);
     placePiece(new Piece("Queen", "White", {3, 0}), 3, 0);
     placePiece(new Piece("King", "White", {4, 0}), 4, 0);
-
-    std::cout << "je suis smart et je mets des pieces" << std::endl;
-
     // Placer les pions blancs (en ligne 1)
     for (int x = 0; x < 8; ++x)
     {

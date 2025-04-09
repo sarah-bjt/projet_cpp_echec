@@ -36,7 +36,9 @@ private:
     static Color stringToColor(const std::string& colorStr);
 
 public:
-    Piece(const std::string& name, const std::string& color, const std::pair<int, int>& startPosition);
+    Piece(const std::string& name, const std::string& color, const std::pair<int, int>& startPosition)
+        : name(stringToName(name)), color(stringToColor(color)), position(startPosition), state(State::Alive) {};
+
     std::vector<std::pair<int, int>> possible_moves(const std::vector<std::vector<Piece*>>& board) const;
     void                             move(const std::pair<int, int>& newPosition, std::vector<std::vector<Piece*>>& board);
     std::pair<int, int>              get_position() const;
