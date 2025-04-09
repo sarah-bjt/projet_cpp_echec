@@ -31,8 +31,8 @@ void Renderer3D::init()
     m_shaderProgram = linkProgram(vs, fs);
 
     std::vector<std::string> faces = {
-        "../../assets/skybox/right.bmp",
         "../../assets/skybox/left.bmp",
+        "../../assets/skybox/right.bmp",
         "../../assets/skybox/up.bmp",
         "../../assets/skybox/down.bmp",
         "../../assets/skybox/front.bmp",
@@ -84,6 +84,15 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     // Calcul de la matrice de vue
     glm::mat4 view = camera.getViewMatrix();
 
+    // Vérifier la matrice de vue (affichage des valeurs)
+    std::cout << "Matrice de vue :\n";
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            std::cout << view[i][j] << " ";  // Afficher chaque élément de la matrice
+        }
+        std::cout << std::endl;
+    }
+
     // Clear buffers (on efface la profondeur et la couleur)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -112,6 +121,7 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_boardModel.getIndices().size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
+
 
 
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
