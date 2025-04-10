@@ -12,6 +12,21 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 }
 } // namespace
 
+std::vector<std::pair<int, int>> Board::stickyTiles()
+{
+    std::vector<std::pair<int, int>> tiles;
+    int                              nbrTiles = globalRandom.uniformDiscrete(3, 10);
+
+    for (int i = 0; i < nbrTiles; ++i)
+    {
+        int x = globalRandom.uniformDiscrete(0, 7); // index entre 0 et 7 inclus
+        int y = globalRandom.uniformDiscrete(0, 7);
+        tiles.push_back({x, y});
+    }
+    tiles.push_back({1, 1});
+    return tiles;
+}
+
 Board::~Board()
 {
     for (auto& row : grid)
@@ -36,6 +51,9 @@ void Board::handleRandom()
 // Méthode d'initialisation du plateau ----------------------------------------------------------------------------------------------------------------------------------
 void Board::init()
 {
+    // Initialiser les cases collantes
+    std::vector<std::pair<int, int>> sticky = stickyTiles();
+
     // charge des fonts
     ImGuiIO& io       = ImGui::GetIO();
     float    fontSize = 17.0f;
@@ -291,6 +309,47 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         return false;
     }
 
+    if (activate_random)
+    {
+        // Vérifier si la case de départ est collante
+        static std::map<std::pair<int, int>, int> tileAttempts;
+        static std::map<std::pair<int, int>, int> tileThresholds;
+        static std::vector<std::pair<int, int>>   sticky = stickyTiles();
+
+        // Vérifier si la case est dans la liste des cases collantes
+        auto isSticky = std::find(sticky.begin(), sticky.end(), from) != sticky.end();
+
+        if (isSticky)
+        {
+            // Initialiser le seuil de tentatives pour cette case si nécessaire
+            if (tileThresholds.find(from) == tileThresholds.end())
+            {
+                tileThresholds[from] = globalRandom.geometric(0.55); // environ 3 essais pour sortir en moyenne
+                tileAttempts[from]   = 0;
+            }
+
+            // Incrémenter le compteur d'essais pour cette case
+            tileAttempts[from]++;
+
+            if (tileAttempts[from] <= tileThresholds[from])
+            {
+                std::cout << "La pièce " << piece->get_type() << " est sur une case collante! "
+                          << "Tentative " << tileAttempts[from] << "/" << tileThresholds[from]
+                          << " pour s'en libérer." << std::endl;
+                performMove(piece, from, from);
+                return false;
+            }
+            else
+            {
+                std::cout << "La pièce " << piece->get_type() << " a réussi à se libérer de la case collante "
+                          << "après " << tileAttempts[from] << " tentatives!" << std::endl;
+
+                // Réinitialiser le compteur après avoir libéré la pièce
+                tileAttempts[from] = 0;
+            }
+        }
+    }
+
     capturePieceIfPresent(to);
     performMove(piece, from, to);
 
@@ -316,10 +375,11 @@ bool Board::isValidMove(Piece* piece, const std::pair<int, int>& from, const std
 // Effectuer le déplacement d'une pièce
 void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
 {
-    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
-    grid[to.first][to.second]     = piece;   // Mettre à jour la grille
     grid[from.first][from.second] = nullptr; // Libérer la case d'origine
-    last_moved_piece_color        = piece->get_color();
+    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
+    grid[to.first][to.second] = piece;       // Mettre à jour la grille
+
+    last_moved_piece_color = piece->get_color();
 }
 
 // Capturer une pièce si elle est présente à la position spécifiée

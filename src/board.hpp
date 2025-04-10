@@ -1,6 +1,7 @@
 #pragma once
 #include <imgui.h>
 #include <iostream>
+#include <map>
 #include <vector>
 #include "piece.hpp"
 #include "quick_imgui/quick_imgui.hpp"
@@ -8,7 +9,6 @@
 class Board {
 private:
     // utilisation du random
-    bool   activate_random = false;
     double randomColorR;
     double randomColorV;
     double randomColorB;
@@ -59,13 +59,14 @@ private:
 public:
     Board() = default;
     ~Board();
-
-    void        init();
-    void        render();
-    void        placePiece(Piece* piece, int x, int y);
-    bool        movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to);
-    Piece*      get_piece_at(const std::pair<int, int>& pos);
-    bool        is_valid_move(const std::pair<int, int>& from, const std::pair<int, int>& to);
-    bool        is_piece_at(const std::pair<int, int>& pos);
-    std::string getPieceButtonLabel(const std::string& piece_type, const std::string& color);
+    bool                             activate_random = false;
+    std::vector<std::pair<int, int>> stickyTiles();
+    void                             init();
+    void                             render();
+    void                             placePiece(Piece* piece, int x, int y);
+    bool                             movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to);
+    Piece*                           get_piece_at(const std::pair<int, int>& pos);
+    bool                             is_valid_move(const std::pair<int, int>& from, const std::pair<int, int>& to);
+    bool                             is_piece_at(const std::pair<int, int>& pos);
+    std::string                      getPieceButtonLabel(const std::string& piece_type, const std::string& color);
 };

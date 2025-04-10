@@ -53,31 +53,11 @@ void Piece::promote(std::string newType, bool random)
         name = Name::Knight;
     if (random)
     {
-        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
+        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 5));
         std::cout << get_type() << std::endl;
         color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
     }
 }
-
-// void Piece::promote(std::string newType, bool aleat)
-// {
-//     if (newType == "Queen")
-//         name = Name::Queen;
-//     else if (newType == "Rook")
-//         name = Name::Rook;
-//     else if (newType == "Bishop")
-//         name = Name::Bishop;
-//     else if (newType == "Knight")
-//         name = Name::Knight;
-//     if (aleat)
-//     {
-//         bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
-//         if (newColor)
-//         {
-//             color = Color::Black;
-//         }
-//     }
-// }
 
 Piece::Color Piece::get_color() const
 {
@@ -298,9 +278,5 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         board[newPosition.first][newPosition.second] = this; // Nouvelle position
 
         std::cout << get_type() << " se déplace en (" << newPosition.first << ", " << newPosition.second << ")." << std::endl;
-    }
-    else
-    {
-        std::cout << "Déplacement invalide !" << std::endl;
     }
 }
