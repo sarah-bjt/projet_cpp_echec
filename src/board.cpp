@@ -148,6 +148,7 @@ std::pair<bool, int> Board::is_game_over()
 // Afficher le plateau
 void Board::render()
 {
+    board_pos = ImGui::GetWindowPos() + ImVec2(20, 50); // Position du plateau
     handleRandom();
     renderBoardSquares();
     renderPieces();
