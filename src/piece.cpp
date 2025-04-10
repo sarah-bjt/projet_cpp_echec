@@ -41,7 +41,7 @@ void Piece::set_state(State newState)
     this->state = newState;
 }
 
-void Piece::promote(std::string newType, bool aleat)
+void Piece::promote(std::string newType, bool random)
 {
     if (newType == "Queen")
         name = Name::Queen;
@@ -51,7 +51,7 @@ void Piece::promote(std::string newType, bool aleat)
         name = Name::Bishop;
     else if (newType == "Knight")
         name = Name::Knight;
-    if (aleat)
+    if (random)
     {
         name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
         std::cout << get_type() << std::endl;
@@ -167,18 +167,18 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             }
 
             // Prise en passant (si un pion adverse a bougé de deux cases)
-            if (y == 4)
-            {
-                // Vérification des pions adverses qui se trouvent sur la même ligne
-                if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y + 1}, board))
-                {
-                    possible_moves.push_back({x - 1, y + 1});
-                }
-                if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y + 1}, board))
-                {
-                    possible_moves.push_back({x + 1, y + 1});
-                }
-            }
+            // if (y == 4)
+            // {
+            //     // Vérification des pions adverses qui se trouvent sur la même ligne
+            //     if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y + 1}, board))
+            //     {
+            //         possible_moves.push_back({x - 1, y + 1});
+            //     }
+            //     if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y + 1}, board))
+            //     {
+            //         possible_moves.push_back({x + 1, y + 1});
+            //     }
+            // }
         }
         else
         {
@@ -205,18 +205,18 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             }
 
             // Prise en passant (si un pion adverse a bougé de deux cases)
-            if (y == 3)
-            {
-                // Vérification des pions adverses qui se trouvent sur la même ligne
-                if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y - 1}, board))
-                {
-                    possible_moves.push_back({x - 1, y - 1});
-                }
-                if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y - 1}, board))
-                {
-                    possible_moves.push_back({x + 1, y - 1});
-                }
-            }
+            // if (y == 3)
+            // {
+            //     // Vérification des pions adverses qui se trouvent sur la même ligne
+            //     if (x - 1 >= 0 && is_enemy({x - 1, y}, board) && is_empty({x - 1, y - 1}, board))
+            //     {
+            //         possible_moves.push_back({x - 1, y - 1});
+            //     }
+            //     if (x + 1 < 8 && is_enemy({x + 1, y}, board) && is_empty({x + 1, y - 1}, board))
+            //     {
+            //         possible_moves.push_back({x + 1, y - 1});
+            //     }
+            // }
         }
     }
     case Name::Bishop:

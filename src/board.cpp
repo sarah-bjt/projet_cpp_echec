@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "maths.hpp"
+#include "random.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -11,7 +12,6 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 }
 } // namespace
 
-// Destructeur
 Board::~Board()
 {
     for (auto& row : grid)
@@ -23,22 +23,30 @@ Board::~Board()
     }
 }
 
-// Méthode d'initialisation du plateau
+void Board::handleRandom()
+{
+    ImGui::SetCursorPos(ImVec2(30, 30));
+    if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
+    {
+        activate_random = !activate_random;
+        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+    }
+}
+
+// Méthode d'initialisation du plateau ----------------------------------------------------------------------------------------------------------------------------------
 void Board::init()
 {
     // charge des fonts
-    //  Récupérer l'IO d'ImGui
-    ImGuiIO& io = ImGui::GetIO();
-    // Charger différentes polices
-    float fontSize = 17.0f;
-    font1          = io.Fonts->AddFontDefault();
-    font2          = io.Fonts->AddFontFromFileTTF("../../import/font/DroidSans.ttf", fontSize);
-    font3          = io.Fonts->AddFontFromFileTTF("../../import/font/Cousine-Regular.ttf", fontSize);
-    font4          = io.Fonts->AddFontFromFileTTF("../../import/font/ReggaeOne-Regular.ttf", fontSize);
-    font5          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyClean.ttf", fontSize);
-    font6          = io.Fonts->AddFontFromFileTTF("../../import/font/Karla-Regular.ttf", fontSize);
-    font7          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyTiny.ttf", fontSize);
-    font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
+    ImGuiIO& io       = ImGui::GetIO();
+    float    fontSize = 17.0f;
+    font1             = io.Fonts->AddFontDefault();
+    font2             = io.Fonts->AddFontFromFileTTF("../../import/font/DroidSans.ttf", fontSize);
+    font3             = io.Fonts->AddFontFromFileTTF("../../import/font/Cousine-Regular.ttf", fontSize);
+    font4             = io.Fonts->AddFontFromFileTTF("../../import/font/ReggaeOne-Regular.ttf", fontSize);
+    font5             = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyClean.ttf", fontSize);
+    font6             = io.Fonts->AddFontFromFileTTF("../../import/font/Karla-Regular.ttf", fontSize);
+    font7             = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyTiny.ttf", fontSize);
+    font8             = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
     io.Fonts->Build();
 
     // Choisir une police aléatoire une seule fois
@@ -55,18 +63,18 @@ void Board::init()
     case 6: chosenFont = font6; break;
     case 7: chosenFont = font7; break;
     case 8: chosenFont = font8; break;
-    default: chosenFont = font1; // Police par défaut
+    default: chosenFont = font1;
     }
-
-    std::cout << "Police choisie : " << chosenFontIndex << std::endl;
 
     // Définir une couleur aléatoire pour les cases
     double randomColorR = (globalRandom.uniformContinuous(50, 200));
     double randomColorV = (globalRandom.uniformContinuous(50, 200));
     double randomColorB = (globalRandom.uniformContinuous(50, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
+    dotColor_light      = IM_COL32(randomColorR + 55, randomColorV + 55, randomColorB + 55, 200);
+    dotColor_dark       = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
 
-    // Placer les pièces blanches (en bas sur la ligne 0)
+    // les pièces blanches
     placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
     placePiece(new Piece("Rook", "White", {7, 0}), 7, 0);
     placePiece(new Piece("Knight", "White", {1, 0}), 1, 0);
@@ -75,13 +83,12 @@ void Board::init()
     placePiece(new Piece("Bishop", "White", {5, 0}), 5, 0);
     placePiece(new Piece("Queen", "White", {3, 0}), 3, 0);
     placePiece(new Piece("King", "White", {4, 0}), 4, 0);
-    // Placer les pions blancs (en ligne 1)
     for (int x = 0; x < 8; ++x)
     {
         placePiece(new Piece("Pawn", "White", {x, 1}), x, 1);
     }
 
-    // Placer les pièces noires (en haut sur la ligne 7)
+    // les pièces noires
     placePiece(new Piece("Rook", "Black", {0, 7}), 0, 7);
     placePiece(new Piece("Rook", "Black", {7, 7}), 7, 7);
     placePiece(new Piece("Knight", "Black", {1, 7}), 1, 7);
@@ -90,62 +97,13 @@ void Board::init()
     placePiece(new Piece("Bishop", "Black", {5, 7}), 5, 7);
     placePiece(new Piece("Queen", "Black", {3, 7}), 3, 7);
     placePiece(new Piece("King", "Black", {4, 7}), 4, 7);
-
-    // Placer les pions noirs (en ligne 6)
     for (int x = 0; x < 8; ++x)
     {
         placePiece(new Piece("Pawn", "Black", {x, 6}), x, 6);
     }
 }
 
-// Placer une pièce sur une case donnée
-void Board::placePiece(Piece* piece, int x, int y)
-{
-    grid[x][y] = piece;
-}
-
-// Vérifier si le jeu est terminé
-std::pair<bool, int> Board::is_game_over()
-{
-    int  whoWin         = 0; // 0 = personne, 1 = noir, 2 = blanc
-    bool whiteKingAlive = false;
-    bool blackKingAlive = false;
-
-    for (int y = 0; y < 8; ++y)
-    {
-        for (int x = 0; x < 8; ++x)
-        {
-            Piece* piece = grid[x][y];
-            if (piece != nullptr)
-            {
-                if (piece->get_type() == "White King" && piece->get_state() == Piece::State::Alive)
-                {
-                    whiteKingAlive = true;
-                }
-                else if (piece->get_type() == "Black King" && piece->get_state() == Piece::State::Alive)
-                {
-                    blackKingAlive = true;
-                }
-            }
-        }
-    }
-
-    // Si l'un des rois est mort, la partie est finie
-    if (!whiteKingAlive)
-    {
-        whoWin = 1;            // les noirs ont gagné
-        return {true, whoWin}; // La partie est terminée
-    }
-    if (!blackKingAlive)
-    {
-        whoWin = 2;            // les blancs ont gagné
-        return {true, whoWin}; // La partie est terminée
-    }
-
-    return {false, whoWin}; // La partie n'est pas terminée
-}
-
-// Afficher le plateau
+// Afficher le plateau ----------------------------------------------------------------------------------------------------------------------------------------------
 void Board::render()
 {
     ImVec2 windowSize = ImGui::GetWindowSize();
@@ -166,10 +124,8 @@ void Board::render()
     handleGameOverPopup();
 }
 
-// Dessiner les cases de l'échiquier
 void Board::renderBoardSquares()
 {
-    // double randomColor = (globalRandom.uniformContinuous(10, 255));
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
@@ -181,6 +137,12 @@ void Board::renderBoardSquares()
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }
+}
+
+// Placer une pièce sur une case donnée
+void Board::placePiece(Piece* piece, int x, int y)
+{
+    grid[x][y] = piece;
 }
 
 // Afficher les pièces sur l'échiquier
@@ -224,6 +186,8 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::PopFont();
 }
 
+// bouge piece ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 // Gérer la sélection d'une pièce
 void Board::handlePieceSelection(int x, int y)
 {
@@ -231,14 +195,12 @@ void Board::handlePieceSelection(int x, int y)
     {
         // Désélectionner la pièce si on clique dessus une deuxième fois
         selected_piece = false;
-        // std::cout << "Désélection de la pièce: (" << x << ", " << y << ")\n";
     }
     else
     {
         // Sélectionner la nouvelle pièce
         selected_piece = true;
         selected_pos   = {x, y};
-        // std::cout << "Sélection de la pièce: (" << x << ", " << y << ")\n";
     }
 }
 
@@ -251,9 +213,6 @@ void Board::renderPossibleMoves()
         // Obtenir les mouvements possibles de la pièce
         std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
 
-        // std::cout << "Mouvements possibles pour la pièce sélectionnée: ("
-        //           << selected_pos.first << ", " << selected_pos.second << ")\n";
-
         for (const auto& move : moves)
         {
             renderMoveIndicator(piece, move);
@@ -265,26 +224,29 @@ void Board::renderPossibleMoves()
 // Afficher l'indicateur visuel pour un mouvement possible
 void Board::renderMoveIndicator(Piece* piece, const std::pair<int, int>& move)
 {
-    // Calculer la position du cercle de mouvement (en tenant compte de l'inversion de y)
+    // Calculer la position du cercle de mouvement
     ImVec2 move_pos = board_pos + ImVec2(move.first * square_size, (7 - move.second) * square_size);
 
-    // Vérifier si une pièce est déjà présente sur la case
-    if (!is_piece_at(move)) // Si la case n'est pas occupée par une pièce
+    if (piece->get_color() == last_moved_piece_color)
     {
-        if (piece->get_color() == last_moved_piece_color)
+        // Dessiner un cercle vert transparent à la position du mouvement possible mais pas jouable
+        ImGui::GetWindowDrawList()->AddCircleFilled(
+            ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
+            10.0f, dotColor_dark
+        );
+    }
+    else
+    {
+        // Dessiner un cercle vert à la position du mouvement possible
+        ImGui::GetWindowDrawList()->AddCircleFilled(
+            ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
+            10.0f, dotColor_light
+        );
+        if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size)))
         {
-            // Dessiner un cercle vert transparent à la position du mouvement possible mais pas jouable
             ImGui::GetWindowDrawList()->AddCircleFilled(
                 ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
-                10.0f, IM_COL32(0, 100, 0, 100)
-            );
-        }
-        else
-        {
-            // Dessiner un cercle vert à la position du mouvement possible
-            ImGui::GetWindowDrawList()->AddCircleFilled(
-                ImVec2(move_pos.x + square_size / 2, move_pos.y + square_size / 2),
-                10.0f, IM_COL32(0, 255, 0, 255)
+                10.0f, dotColor_light
             );
         }
     }
@@ -315,6 +277,79 @@ void Board::renderSelectionInfo()
     ImGui::Text("%s", msg.c_str());
 }
 
+// Fonction pour déplacer une pièce d'une case à une autre
+bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to)
+{
+    Piece* piece = grid[from.first][from.second];
+    if (piece == nullptr)
+    {
+        return false;
+    }
+
+    if (!isValidMove(piece, from, to))
+    {
+        return false;
+    }
+
+    capturePieceIfPresent(to);
+    performMove(piece, from, to);
+
+    if (checkForPawnPromotion(piece, to))
+    {
+        return true;
+    }
+
+    return true;
+}
+
+// Vérifier si un mouvement est valide
+bool Board::isValidMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
+{
+    std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
+    if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
+    {
+        return false; // Mouvement invalide
+    }
+    return true;
+}
+
+// Effectuer le déplacement d'une pièce
+void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
+{
+    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
+    grid[to.first][to.second]     = piece;   // Mettre à jour la grille
+    grid[from.first][from.second] = nullptr; // Libérer la case d'origine
+    last_moved_piece_color        = piece->get_color();
+}
+
+// Capturer une pièce si elle est présente à la position spécifiée
+void Board::capturePieceIfPresent(const std::pair<int, int>& position)
+{
+    Piece* target_piece = grid[position.first][position.second];
+    if (target_piece != nullptr)
+    {
+        // La pièce cible existe et doit être capturée
+        target_piece->set_state(Piece::State::Dead);
+    }
+}
+
+// popup promotion -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Vérifier si un pion peut être promu
+bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& position)
+{
+    if (((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7)) && !is_game_over().first)
+    {
+        std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
+        // Activer la promotion
+        promotion_active = true;
+        promotion_pos    = position;
+        promoted_piece   = piece;
+        return true;
+    }
+    return false;
+}
+
 // Gérer la popup de promotion d'un pion
 void Board::handlePromotionPopup()
 {
@@ -323,7 +358,7 @@ void Board::handlePromotionPopup()
         ImGui::OpenPopup("Promotion");
     }
 
-    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize) && !activate_random)
     {
         ImGui::Text("Choisissez une promotion:");
 
@@ -343,43 +378,72 @@ void Board::handlePromotionPopup()
         {
             promotePawn("Knight", false);
         }
-        if (ImGui::Button("Aléatoir ;)"))
+        ImGui::EndPopup();
+    }
+    if (activate_random && promotion_active)
+    {
+        ImGui::Text("Oh WOW ! What's this? A random promotion?");
+        if (ImGui::Button("Oh Interesting!"))
         {
-            promotePawn("Knight", true);
+            promotePawn("Pawn", true);
         }
-
+        if (ImGui::Button("No Thanks"))
+        {
+            promotePawn("Pawn", false);
+        }
         ImGui::EndPopup();
     }
 }
 
 // Promouvoir un pion avec le type spécifié
-void Board::promotePawn(const std::string& pieceType, bool aleat)
+void Board::promotePawn(const std::string& pieceType, bool random)
 {
-    promoted_piece->promote(pieceType, aleat);
+    promoted_piece->promote(pieceType, random);
     promotion_active = false;
     ImGui::CloseCurrentPopup();
 }
 
-// Gérer la popup de fin de partie
-// void Board::handleGameOverPopup()
-// {
-//     if (is_game_over())
-//     {
-//         ImGui::OpenPopup("Game Over");
-//     }
+//  popoup de fin de jeu --------------------------------------------------------------------------------------------------------------------------------------------------
 
-//     if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-//     {
-//         ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+// Vérifier si le jeu est terminé
+std::pair<bool, int> Board::is_game_over()
+{
+    int  whoWin         = 0; // 0 = personne, 1 = noir, 2 = blanc
+    bool whiteKingAlive = false;
+    bool blackKingAlive = false;
 
-//         if (ImGui::Button("Quitter"))
-//         {
-//             exit(0); // Ferme le programme
-//         }
+    for (int y = 0; y < 8; ++y)
+    {
+        for (int x = 0; x < 8; ++x)
+        {
+            Piece* piece = grid[x][y];
+            if (piece != nullptr)
+            {
+                if (piece->get_type() == "White King" && piece->get_state() == Piece::State::Alive)
+                {
+                    whiteKingAlive = true;
+                }
+                else if (piece->get_type() == "Black King" && piece->get_state() == Piece::State::Alive)
+                {
+                    blackKingAlive = true;
+                }
+            }
+        }
+    }
 
-//         ImGui::EndPopup();
-//     }
-// }
+    if (!whiteKingAlive)
+    {
+        whoWin = 1; // les noirs ont gagné
+        return {true, whoWin};
+    }
+    if (!blackKingAlive)
+    {
+        whoWin = 2; // les blancs ont gagné
+        return {true, whoWin};
+    }
+
+    return {false, whoWin};
+}
 
 void Board::handleGameOverPopup()
 {
@@ -450,93 +514,8 @@ void Board::handleGameOverPopup()
     }
 }
 
-// Fonction pour déplacer une pièce d'une case à une autre
-bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to)
-{
-    Piece* piece = grid[from.first][from.second];
-    if (piece == nullptr)
-        return false;
-
-    if (!isValidMove(piece, from, to))
-        return false;
-
-    // Capturer la pièce sur la case cible si elle existe
-    capturePieceIfPresent(to);
-
-    // Effectuer le déplacement
-    performMove(piece, from, to);
-
-    // Vérifier si un pion peut être promu
-    if (checkForPawnPromotion(piece, to))
-        return true;
-
-    return true; // Mouvement valide, on a effectué le déplacement
-}
-
-// Vérifier si un mouvement est valide
-bool Board::isValidMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
-{
-    std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
-    if (std::find(moves.begin(), moves.end(), to) == moves.end() || piece->get_color() == last_moved_piece_color)
-    {
-        // std::cout << "Mouvement invalide pour " << piece->get_type()
-        //           << " de (" << from.first << "," << from.second << ")"
-        //           << " à (" << to.first << "," << to.second << ")" << std::endl;
-        return false; // Mouvement invalide
-    }
-    return true;
-}
-
-// Capturer une pièce si elle est présente à la position spécifiée
-void Board::capturePieceIfPresent(const std::pair<int, int>& position)
-{
-    Piece* target_piece = grid[position.first][position.second];
-    if (target_piece != nullptr)
-    {
-        // La pièce cible existe et doit être capturée
-        target_piece->set_state(Piece::State::Dead);
-        // std::cout << "Capture de la pièce à (" << position.first << ", " << position.second << ")\n";
-    }
-}
-
-// Effectuer le déplacement d'une pièce
-void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
-{
-    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
-    grid[to.first][to.second]     = piece;   // Mettre à jour la grille
-    grid[from.first][from.second] = nullptr; // Libérer la case d'origine
-
-    // Met à jour la dernière couleur déplacée
-    last_moved_piece_color = piece->get_color();
-}
-
-// Vérifier si un pion peut être promu
-bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& position)
-{
-    if (((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7)) && !is_game_over().first)
-    {
-        std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
-        // Activer la promotion
-        promotion_active = true;
-        promotion_pos    = position;
-        promoted_piece   = piece;
-        return true; // Ne pas continuer tant que la promotion n'est pas choisie
-    }
-    return false;
-}
-
-// Informe si une pièce est présente sur une case donnée
-bool Board::is_piece_at(const std::pair<int, int>& pos)
-{
-    return grid[pos.first][pos.second] != nullptr;
-}
-
-void Board::handleRandom()
-{
-    ImGui::SetCursorPos(ImVec2(30, 30)); // Positionnez le bouton où vous voulez
-    if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
-    {
-        activate_random = !activate_random;
-        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
-    }
-}
+// // Informe si une pièce est présente sur une case donnée
+// bool Board::is_piece_at(const std::pair<int, int>& pos)
+// {
+//     return grid[pos.first][pos.second] != nullptr;
+// }
