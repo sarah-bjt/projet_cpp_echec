@@ -16,8 +16,10 @@ private:
 
     // std::vector<std::vector<Piece*>> grid;                         // 8x8 pour les pièces
 
-    ImVec2              board_pos   = ImVec2(850, 80); // Position de l'interface du plateau
-    float               square_size = 60.0f;           // Taille d'une case en pixels
+    ImVec2 board_pos = ImVec2(936, 315); // Position de l'interface du plateau
+    // ImVec2 board_pos = ImVec2(0, 0);
+    // ImVec2              board_pos   = ImGui::GetWindowPos(); // Position de l'interface du plateau
+    float               square_size = 50.0f; // Taille d'une case en pixels
     ImU32               squareColor;
     bool                selected_piece         = false;               // Pour savoir si une pièce est sélectionnée
     std::pair<int, int> selected_pos           = {-1, -1};            // Position de la pièce sélectionnée
