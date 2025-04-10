@@ -29,6 +29,7 @@ int main()
     // Variable pour calculer le deltaTime
     float lastFrame = 0.0f;
 
+    // Initialisation d'ImGui et des autres composants
     quick_imgui::loop(
         "Chess 3D",
         {
@@ -47,7 +48,7 @@ int main()
                 lastFrame = currentFrame;
 
                 // 🎮 Mouvements de la caméra (clavier)
-                camera.processKeyboard(glfwGetCurrentContext(), deltaTime);
+                camera.processMovement(deltaTime); // Traite les déplacements de la caméra
 
                 // Début de la fenêtre ImGui pour afficher le plateau 2D
                 ImGui::Begin("Chess 2D");
@@ -59,26 +60,33 @@ int main()
                 glm::mat4 view = camera.getViewMatrix();
 
                 // Rendu 3D
-                renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera); },
+                renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera); // Passer window
+            },
 
             // Callbacks pour les événements de clavier, souris et redimensionnement de fenêtre
-            .key_callback = [](int key, int scancode, int action, int mods) { std::cout << "Key: " << key << " Scancode: " << scancode
-                                                                                        << " Action: " << action << " Mods: " << mods << '\n'; },
-
-            .mouse_button_callback = [](int button, int action, int mods) { std::cout << "Button: " << button << " Action: " << action
-                                                                                      << " Mods: " << mods << '\n'; },
-
-            .cursor_position_callback = [&](double xpos, double ypos) {
-                // Traiter le mouvement de la souris pour la caméra
-                camera.processMouseMovement(xpos, ypos); // Mise à jour de la caméra avec les nouveaux mouvements
+            .key_callback = [&camera](int key, int scancode, int action, int mods) {
+                // Mise à jour de l'état des touches dans la caméra
+                if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                    camera.keyState(key, true);  // Appuyer sur la touche
+                } else if (action == GLFW_RELEASE) {
+                    camera.keyState(key, false); // Relâcher la touche
+                }
             },
 
-            .scroll_callback = [&](double xoffset, double yoffset) {
-                // Traiter le défilement pour le zoom
-                camera.processMouseScroll(yoffset); // Mise à jour du zoom de la caméra
+            .mouse_button_callback = [](int button, int action, int mods) {
+                // Nous n'avons plus besoin de gérer les événements de souris ici.
+                // Tu peux soit laisser ce callback vide, soit supprimer cette fonction
+                // si tu ne souhaites pas gérer les clics de souris du tout.
             },
 
-            .window_size_callback = [](int width, int height) { std::cout << "Resized: " << width << ' ' << height << '\n'; },
+            // Suppression du callback de mouvement de souris (nous n'avons plus besoin de ça)
+            .cursor_position_callback = [](double xpos, double ypos) {
+                // Ne rien faire ici
+            },
+
+            .window_size_callback = [](int width, int height) {
+                std::cout << "Resized: " << width << ' ' << height << '\n';
+            },
         }
     );
 

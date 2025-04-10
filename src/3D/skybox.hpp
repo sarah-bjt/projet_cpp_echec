@@ -20,9 +20,13 @@ public:
 
 private:
     GLuint m_skyboxTexture; // Identifiant de la texture cubemap
-    VAO m_vao;
-    VBO m_vbo;
-    EBO m_ebo;
+    VAO m_vao;              // VAO pour la skybox
+    VBO m_vbo;              // VBO pour la skybox
+    EBO m_ebo;              // EBO pour la skybox
+
+    GLuint m_floorVAO;      // VAO pour le sol
+    GLuint m_floorVBO;      // VBO pour le sol
+    GLuint m_floorEBO;      // EBO pour le sol
 
     void loadCubemap(const std::vector<std::string>& faces); // Chargement des textures cubemap
     void setupSkyboxData(); // Configuration des données de la skybox (vertices, etc.)

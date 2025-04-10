@@ -8,6 +8,8 @@ uniform mat4 view;
 
 void main()
 {
-    TexCoords = aPos;  
-    gl_Position = projection * view * vec4(aPos, 1.0);
+    TexCoords = aPos;
+
+    vec4 pos = projection * view * vec4(aPos, 1.0);
+    gl_Position = pos.xyww; // <-- on force z = w (== 1.0 après division perspective)
 }

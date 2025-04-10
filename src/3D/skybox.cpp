@@ -54,15 +54,18 @@ void flipTextureColors(std::vector<unsigned char>& data) {
 }
 
 Skybox::Skybox()
-    : m_skyboxTexture(0)
+    : m_skyboxTexture(0), m_floorVAO(0), m_floorVBO(0), m_floorEBO(0)
 {
-    // Constructeur : initialisation de la skybox
+    // Constructeur : initialisation de la skybox et du sol
 }
 
 Skybox::~Skybox()
 {
-    // Destruction : nettoyer les ressources de la skybox
+    // Destruction : nettoyer les ressources de la skybox et du sol
     glDeleteTextures(1, &m_skyboxTexture);
+    glDeleteVertexArrays(1, &m_floorVAO);
+    glDeleteBuffers(1, &m_floorVBO);
+    glDeleteBuffers(1, &m_floorEBO);
 }
 
 void Skybox::setupSkyboxData()
@@ -89,7 +92,7 @@ void Skybox::setupSkyboxData()
         4, 0, 3, 4, 3, 7   // Face haut
     };
 
-    // Initialisation des buffers et du VAO
+    // Initialisation des buffers et du VAO pour la skybox
     m_vao.init();
     m_vbo.init();
     m_ebo.init();
@@ -105,6 +108,42 @@ void Skybox::setupSkyboxData()
     glEnableVertexAttribArray(0);
 
     m_vao.unbind();
+
+    // Initialisation du sol
+    float floorVertices[] = {
+        // positions       // normales        // texcoords
+        -10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        -10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f
+    };
+
+    unsigned int floorIndices[] = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    glGenVertexArrays(1, &m_floorVAO);
+    glGenBuffers(1, &m_floorVBO);
+    glGenBuffers(1, &m_floorEBO);
+
+    glBindVertexArray(m_floorVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_floorVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_floorEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
 }
 
 void Skybox::loadCubemap(const std::vector<std::string>& faces)
@@ -151,12 +190,17 @@ void Skybox::render(GLuint shaderProgram, const glm::mat4& projection, const glm
     // Appliquer les matrices de projection et de vue
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    
-    // Lier la texture cubemap
+
+    // Lier la texture cubemap pour la skybox
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
 
     // Rendu de la skybox
     m_vao.bind();
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // 36 indices pour un cube
     m_vao.unbind();
+
+    // Rendu du sol
+    glBindVertexArray(m_floorVAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 indices pour un simple plan
+    glBindVertexArray(0);
 }
