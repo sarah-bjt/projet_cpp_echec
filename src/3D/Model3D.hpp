@@ -33,6 +33,11 @@ struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 texCoord;
+    glm::vec3 Kd;
+    glm::vec3 Ka;
+    glm::vec3 Ks;
+    int useTexture;
+    float Ns;
 
     bool operator==(const Vertex& other) const {
         return position == other.position && normal == other.normal && texCoord == other.texCoord;

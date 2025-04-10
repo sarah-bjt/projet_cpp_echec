@@ -11,23 +11,54 @@
 #include <../../import/stb_image.h>
 
 // Fonction pour charger une texture à partir d'un fichier (sans GLEW)
+// GLuint Model3D::loadTexture(const std::string& texturePath) {
+//     int width, height, nrChannels;
+//     unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
+//     if (!data) {
+//         std::cerr << "Erreur de chargement de la texture : " << texturePath << " -> " << stbi_failure_reason() << std::endl;
+//         return 0;
+//     }
+
+//     GLuint textureID;
+//     glGenTextures(1, &textureID);
+//     glBindTexture(GL_TEXTURE_2D, textureID);
+
+//     GLenum format = (nrChannels == 3) ? GL_RGB : GL_RGBA;
+//     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+//     glGenerateMipmap(GL_TEXTURE_2D);
+
+//     stbi_image_free(data);  // Libère l'image après avoir chargé la texture
+//     return textureID;
+// }
 GLuint Model3D::loadTexture(const std::string& texturePath) {
+    // Charger l'image à partir du fichier avec stb_image
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
+
+    // Vérifier si l'image est bien chargée
     if (!data) {
-        std::cerr << "Erreur de chargement de la texture : " << texturePath << std::endl;
+        std::cerr << "Erreur de chargement de la texture : " << texturePath << " -> " << stbi_failure_reason() << std::endl;
         return 0;
     }
 
+    // Créer un identifiant de texture OpenGL
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
+    // Choisir le format correct en fonction du nombre de canaux (on suppose que BMP a 3 ou 4 canaux)
     GLenum format = (nrChannels == 3) ? GL_RGB : GL_RGBA;
+
+    // Générer la texture OpenGL avec les données de l'image
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    // Générer les mipmaps pour la texture (utile pour le filtrage)
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    stbi_image_free(data);  // Libère l'image après avoir chargé la texture
+    // Libérer les données d'image après avoir fini de les utiliser
+    stbi_image_free(data);
+
+    // Retourner l'ID de la texture générée
     return textureID;
 }
 
@@ -64,6 +95,46 @@ std::unordered_map<std::string, Material> Model3D::loadMTL(const std::string& mt
 }
 
 bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFilename) {
+    // Maps pour stocker les propriétés par nom de matériau
+    std::unordered_map<std::string, glm::vec3> mapKd;
+    std::unordered_map<std::string, glm::vec3> mapKa;
+    std::unordered_map<std::string, glm::vec3> mapKs;
+    std::unordered_map<std::string, float> mapNs;
+    std::unordered_map<std::string, GLuint> mapTextureID;
+
+    // Charger les propriétés des matériaux
+    std::ifstream mtlFile(mtlFilename);
+    if (mtlFile.is_open()) {
+        std::string mtlLine, currentMat;
+        while (std::getline(mtlFile, mtlLine)) {
+            std::istringstream mss(mtlLine);
+            std::string mPrefix;
+            mss >> mPrefix;
+
+            if (mPrefix == "newmtl") {
+                mss >> currentMat;
+            } else if (mPrefix == "Kd") {
+                glm::vec3 kd; mss >> kd.r >> kd.g >> kd.b;
+                mapKd[currentMat] = kd;
+            } else if (mPrefix == "Ka") {
+                glm::vec3 ka; mss >> ka.r >> ka.g >> ka.b;
+                mapKa[currentMat] = ka;
+            } else if (mPrefix == "Ks") {
+                glm::vec3 ks; mss >> ks.r >> ks.g >> ks.b;
+                mapKs[currentMat] = ks;
+            } else if (mPrefix == "Ns") {
+                float ns; mss >> ns;
+                mapNs[currentMat] = ns;
+            }
+            else if (mPrefix == "map_Kd") {
+                std::string textureFile; mss >> textureFile;
+                // Optionnel : charger la texture ici, par ex :
+                GLuint texID = loadTexture(textureFile); // selon ton système
+                mapTextureID[currentMat] = texID;
+            }
+        }
+    }
+
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Erreur : Impossible d'ouvrir le fichier " << filename << std::endl;
@@ -76,6 +147,7 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
     std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
     std::string line;
+    std::string currentMaterial = "";
     while (std::getline(file, line)) {
         std::istringstream ss(line);
         std::string prefix;
@@ -97,6 +169,9 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
             texCoord.y = 1.0f - texCoord.y;
             tempTexCoords.push_back(texCoord);
         }
+        else if (prefix == "usemtl") {
+            ss >> currentMaterial;
+        }
         else if (prefix == "f") {
             std::string vertexData;
             while (ss >> vertexData) {
@@ -115,6 +190,11 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
                 vertex.position = tempVertices[vIndex];
                 vertex.texCoord = tempTexCoords[tIndex];
                 vertex.normal = tempNormals[nIndex];
+                vertex.Kd = mapKd.count(currentMaterial) ? mapKd[currentMaterial] : glm::vec3(0.0f);
+                vertex.Ka = mapKa.count(currentMaterial) ? mapKa[currentMaterial] : glm::vec3(0.0f);
+                vertex.Ks = mapKs.count(currentMaterial) ? mapKs[currentMaterial] : glm::vec3(0.0f);
+                vertex.Ns = mapNs.count(currentMaterial) ? mapNs[currentMaterial] : 0.0f;
+                vertex.useTexture = mapTextureID.count(currentMaterial) && mapTextureID[currentMaterial] != 0 ? 1 : 0;
 
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
@@ -137,7 +217,14 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
         // On suppose que le modèle utilise le matériau "board_material"
         if (materials.find("board_material") != materials.end()) {
             std::string texturePath = materials["board_material"].textureFile;
-            textureID = loadTexture(texturePath); // Charger la texture
+            
+            // Ajouter un chemin relatif si le fichier texture est dans le même dossier que le fichier .mtl
+            size_t lastSlashPos = mtlFilename.find_last_of("/\\");
+            std::string dir = mtlFilename.substr(0, lastSlashPos + 1);
+            std::string fullTexturePath = dir + texturePath;
+
+            // Charger la texture avec le chemin complet
+            textureID = loadTexture(fullTexturePath); // Charger la texture
         }
     }
 

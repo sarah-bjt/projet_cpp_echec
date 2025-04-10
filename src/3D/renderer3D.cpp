@@ -82,6 +82,21 @@ void Renderer3D::init()
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
 
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Kd));
+
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ks));
+
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ka));
+
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ns));
+
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(7, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, useTexture));
+
     glBindVertexArray(0);
 }
 
@@ -125,10 +140,10 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     // Envoi de la position de la lumière et de la caméra
-    glm::vec3 lightPos(1.0f, 1.0f, 1.0f);  // Position de la lumière
+    glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 0.0f);  // Position de la lumière
 
     // Appliquer la même translation à la lumière pour la garder au bon endroit
-    lightPos = glm::vec3(model * glm::vec4(lightPos, 1.0f));
+    //lightPos = glm::vec3(model * glm::vec4(lightPos, 1.0f));
 
     glm::vec3 viewPos = camera.getPosition();  // Position de la caméra
     glUniform3fv(lightPosLoc, 1, glm::value_ptr(lightPos));
@@ -136,9 +151,13 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
 
     // Dessin du plateau
     glBindVertexArray(m_boardVAO);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_boardModel.getIndices().size()), GL_UNSIGNED_INT, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_boardModel.textureID);
+        GLuint textureLoc = glGetUniformLocation(m_boardShader, "texture");
+        glUniform1i(textureLoc, 0);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_boardModel.getIndices().size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-}
+} //
 
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
 {
