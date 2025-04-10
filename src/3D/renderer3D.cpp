@@ -1,5 +1,6 @@
 // Renderer3D.cpp
 #include "Renderer3D.hpp"
+#include <iostream>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <fstream>
@@ -7,6 +8,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include <sstream>
+
 
 
 Renderer3D::Renderer3D()
