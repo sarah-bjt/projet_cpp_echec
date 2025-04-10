@@ -53,8 +53,7 @@ void Piece::promote(std::string newType, bool random)
         name = Name::Knight;
     if (random)
     {
-        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 5));
-        std::cout << get_type() << std::endl;
+        name  = static_cast<Name>(globalRandom.uniformDiscrete(0, 5));
         color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
     }
 }
@@ -260,7 +259,5 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         board[position.first][position.second]       = nullptr; // Libérer l'ancienne case
         position                                     = newPosition;
         board[newPosition.first][newPosition.second] = this; // Nouvelle position
-
-        std::cout << get_type() << " se déplace en (" << newPosition.first << ", " << newPosition.second << ")." << std::endl;
     }
 }

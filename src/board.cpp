@@ -75,7 +75,7 @@ void Board::handleRandom()
     if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
     {
         activate_random = !activate_random;
-        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+        // std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
     }
 }
 
@@ -340,7 +340,6 @@ void Board::handleMoveSelection(const std::pair<int, int>& move)
     if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size))
         && ImGui::IsMouseClicked(0))
     {
-        std::cout << "Déplacement effectué vers (" << move.first << ", " << move.second << ")\n";
         movePiece(selected_pos, move);
         selected_piece = false; // Désélectionner après déplacement
     }
@@ -452,7 +451,6 @@ bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& posit
 {
     if (((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7)) && !is_game_over().first)
     {
-        std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
         // Activer la promotion
         promotion_active = true;
         promotion_pos    = position;
