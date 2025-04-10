@@ -1,4 +1,16 @@
+// Pour les maths 
 
+Lois implémentées: 
+UniformeDiscrete --> Typographie + choix des Sticky Tiles
+Bernoulli --> Changement de couleur au moment de la promotion
+Géométrique --> Nombre d'essai avant de sortir d'une sticky Tiles
+Uniforme contine --> Couleur des cases
+Binomiale --> Nombre de réussite pour un nombre de lancé près définie
+   
+   
+   
+   
+   
     // Pour une graine spécifique, décommentez la ligne suivante:
     // RandomDistributions random(12345);
 

@@ -1,5 +1,6 @@
 #include <imgui.h>
 #include <board.hpp>
+#include <set>
 #include <string>
 #include <vector>
 #include "maths.hpp"
@@ -27,6 +28,27 @@ std::vector<std::pair<int, int>> Board::stickyTiles()
     return tiles;
 }
 
+std::vector<std::pair<int, int>> Board::visiblySticky(std::vector<std::pair<int, int>> tiles)
+{
+    int nbrVisibleSticky = globalRandom.binomial(tiles.size(), 0.5);
+
+    std::set<int> selectedIndices;
+
+    while (selectedIndices.size() < nbrVisibleSticky)
+    {
+        int idx = globalRandom.uniformDiscrete(0, tiles.size() - 1);
+        selectedIndices.insert(idx); // évite les doublons
+    }
+
+    std::vector<std::pair<int, int>> visibleTiles;
+    for (int idx : selectedIndices)
+    {
+        visibleTiles.push_back(tiles[idx]);
+    }
+
+    return visibleTiles;
+}
+
 Board::~Board()
 {
     for (auto& row : grid)
@@ -52,7 +74,13 @@ void Board::handleRandom()
 void Board::init()
 {
     // Initialiser les cases collantes
-    std::vector<std::pair<int, int>> sticky = stickyTiles();
+    stickingTiles      = stickyTiles();
+    visibleStickyTiles = visiblySticky(stickingTiles);
+
+    // for (int i = 0; i < sticky.size(); ++i)
+    // {
+    //     std::cout << "Sticky tile: " << sticky[i].first << ", " << sticky[i].second << std::endl;
+    // };
 
     // charge des fonts
     ImGuiIO& io       = ImGui::GetIO();
@@ -130,6 +158,10 @@ void Board::render()
     square_size = windowSize.x / 9.0f;
     handleRandom();
     renderBoardSquares();
+    if (activate_random)
+    {
+        renderStickyStuff(visibleStickyTiles);
+    }
     renderPieces();
 
     if (selected_piece)
@@ -178,6 +210,16 @@ void Board::renderPieces()
         }
     }
 }
+
+// Afficher le sticky stuff
+void Board::renderStickyStuff(auto visiblyStickyTiles)
+{
+    for (const auto& tile : visiblyStickyTiles)
+    {
+        ImVec2 pos = board_pos + ImVec2(tile.first * square_size, (7 - tile.second) * square_size);
+        ImGui::GetWindowDrawList()->AddCircleFilled(pos + ImVec2(square_size / 2, square_size / 2), square_size * 0.25f, IM_COL32(0, randomColorV, 0, 60));
+    }
+};
 
 // Afficher une pièce à une position spécifique
 void Board::renderPieceAt(Piece* piece, int x, int y)
@@ -314,17 +356,16 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         // Vérifier si la case de départ est collante
         static std::map<std::pair<int, int>, int> tileAttempts;
         static std::map<std::pair<int, int>, int> tileThresholds;
-        static std::vector<std::pair<int, int>>   sticky = stickyTiles();
 
         // Vérifier si la case est dans la liste des cases collantes
-        auto isSticky = std::find(sticky.begin(), sticky.end(), from) != sticky.end();
+        auto isSticky = std::find(stickingTiles.begin(), stickingTiles.end(), from) != stickingTiles.end();
 
         if (isSticky)
         {
             // Initialiser le seuil de tentatives pour cette case si nécessaire
             if (tileThresholds.find(from) == tileThresholds.end())
             {
-                tileThresholds[from] = globalRandom.geometric(0.55); // environ 3 essais pour sortir en moyenne
+                tileThresholds[from] = globalRandom.geometric(0.75);
                 tileAttempts[from]   = 0;
             }
 
