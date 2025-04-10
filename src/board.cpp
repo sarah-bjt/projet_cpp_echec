@@ -1,16 +1,74 @@
+// le gentil board.cpp
+
+// board.cpp
+
+#include <imgui.h>
 #include <board.hpp>
+#include <string>
+#include <vector>
+#include "maths.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
 {
-    return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+    return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 } // namespace
 
-// Constructeur
-Board::Board()
+// Destructeur
+Board::~Board()
 {
-    grid.resize(8, std::vector<Piece*>(8, nullptr));
+    for (auto& row : grid)
+    {
+        for (auto& piece : row)
+        {
+            delete piece;
+        }
+    }
+}
+
+// Méthode d'initialisation du plateau
+void Board::init()
+{
+    // charge des fonts
+    //  Récupérer l'IO d'ImGui
+    ImGuiIO& io = ImGui::GetIO();
+    // Charger différentes polices
+    float fontSize = 17.0f;
+    font1          = io.Fonts->AddFontDefault();
+    font2          = io.Fonts->AddFontFromFileTTF("../../import/font/DroidSans.ttf", fontSize);
+    font3          = io.Fonts->AddFontFromFileTTF("../../import/font/Cousine-Regular.ttf", fontSize);
+    font4          = io.Fonts->AddFontFromFileTTF("../../import/font/ReggaeOne-Regular.ttf", fontSize);
+    font5          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyClean.ttf", fontSize);
+    font6          = io.Fonts->AddFontFromFileTTF("../../import/font/Karla-Regular.ttf", fontSize);
+    font7          = io.Fonts->AddFontFromFileTTF("../../import/font/ProggyTiny.ttf", fontSize);
+    font8          = io.Fonts->AddFontFromFileTTF("../../import/font/Roboto-Medium.ttf", fontSize);
+    io.Fonts->Build();
+
+    // Choisir une police aléatoire une seule fois
+    chosenFontIndex = globalRandom.uniformDiscrete(1, 8);
+
+    // Assigner la police choisie
+    switch (chosenFontIndex)
+    {
+    case 1: chosenFont = font1; break;
+    case 2: chosenFont = font2; break;
+    case 3: chosenFont = font3; break;
+    case 4: chosenFont = font4; break;
+    case 5: chosenFont = font5; break;
+    case 6: chosenFont = font6; break;
+    case 7: chosenFont = font7; break;
+    case 8: chosenFont = font8; break;
+    default: chosenFont = font1; // Police par défaut
+    }
+
+    std::cout << "Police choisie : " << chosenFontIndex << std::endl;
+
+    // Définir une couleur aléatoire pour les cases
+    double randomColorR = (globalRandom.uniformContinuous(0, 200));
+    double randomColorV = (globalRandom.uniformContinuous(0, 200));
+    double randomColorB = (globalRandom.uniformContinuous(0, 200));
+    squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
 
     // Placer les pièces blanches (en bas sur la ligne 0)
     placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
@@ -21,7 +79,6 @@ Board::Board()
     placePiece(new Piece("Bishop", "White", {5, 0}), 5, 0);
     placePiece(new Piece("Queen", "White", {3, 0}), 3, 0);
     placePiece(new Piece("King", "White", {4, 0}), 4, 0);
-
     // Placer les pions blancs (en ligne 1)
     for (int x = 0; x < 8; ++x)
     {
@@ -45,43 +102,6 @@ Board::Board()
     }
 }
 
-// Destructeur
-Board::~Board()
-{
-    for (auto& row : grid)
-    {
-        for (auto& piece : row)
-        {
-            delete piece;
-        }
-    }
-}
-
-// Méthode d'initialisation du plateau
-void Board::init()
-{
-    // Initialiser la position du plateau sur l'écran
-    board_pos = ImVec2(50, 50); // Position du coin supérieur gauche du plateau
-
-    // Définir la taille des cases
-    square_size = 60; // Taille en pixels de chaque case
-
-    // Initialiser les variables de sélection
-    selected_piece = false;
-    selected_pos   = {-1, -1};
-
-    // Initialiser les variables de promotion
-    promotion_active = false;
-    promoted_piece   = nullptr;
-
-    // Initialiser la couleur de la dernière pièce déplacée
-    // Par défaut, commencer avec les noirs pour permettre aux blancs de jouer en premier
-    last_moved_piece_color = Piece::Color::Black;
-
-    // Autres initialisations éventuelles
-    std::cout << "Plateau d'échecs initialisé" << std::endl;
-}
-
 // Placer une pièce sur une case donnée
 void Board::placePiece(Piece* piece, int x, int y)
 {
@@ -89,8 +109,9 @@ void Board::placePiece(Piece* piece, int x, int y)
 }
 
 // Vérifier si le jeu est terminé
-bool Board::is_game_over()
+std::pair<bool, int> Board::is_game_over()
 {
+    int  whoWin         = 0; // 0 = personne, 1 = noir, 2 = blanc
     bool whiteKingAlive = false;
     bool blackKingAlive = false;
 
@@ -114,17 +135,24 @@ bool Board::is_game_over()
     }
 
     // Si l'un des rois est mort, la partie est finie
-    if (!whiteKingAlive || !blackKingAlive)
+    if (!whiteKingAlive)
     {
-        return true; // La partie est terminée
+        whoWin = 1;            // les noirs ont gagné
+        return {true, whoWin}; // La partie est terminée
+    }
+    if (!blackKingAlive)
+    {
+        whoWin = 2;            // les blancs ont gagné
+        return {true, whoWin}; // La partie est terminée
     }
 
-    return false;
+    return {false, whoWin}; // La partie n'est pas terminée
 }
 
 // Afficher le plateau
 void Board::render()
 {
+    handleRandom();
     renderBoardSquares();
     renderPieces();
 
@@ -141,6 +169,7 @@ void Board::render()
 // Dessiner les cases de l'échiquier
 void Board::renderBoardSquares()
 {
+    // double randomColor = (globalRandom.uniformContinuous(10, 255));
     for (int y = 7; y >= 0; --y)
     {
         for (int x = 0; x < 8; ++x)
@@ -148,7 +177,7 @@ void Board::renderBoardSquares()
             ImVec2 pos = board_pos + ImVec2(x * square_size, (7 - y) * square_size);
 
             // Dessiner les cases
-            ImU32 color = (x + y) % 2 == 0 ? IM_COL32(119, 148, 85, 255) : IM_COL32(240, 217, 181, 255);
+            ImU32 color = (x + y) % 2 == 0 ? squareColor : IM_COL32(240, 217, 181, 255);
             ImGui::GetWindowDrawList()->AddRectFilled(pos, ImVec2(pos.x + square_size, pos.y + square_size), color);
         }
     }
@@ -180,7 +209,10 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::SetCursorScreenPos(pos);
     std::string button_label = piece_str + "##" + std::to_string(x) + std::to_string(y);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
+    // ImGui::PushFont(font3);
+    ImGui::PushFont(chosenFont);
+
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
 
     if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
@@ -189,6 +221,7 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     }
 
     ImGui::PopStyleColor(2);
+    ImGui::PopFont();
 }
 
 // Gérer la sélection d'une pièce
@@ -290,7 +323,7 @@ void Board::handlePromotionPopup()
         ImGui::OpenPopup("Promotion");
     }
 
-    if (ImGui::BeginPopupModal("Promotion", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Text("Choisissez une promotion:");
 
@@ -328,23 +361,92 @@ void Board::promotePawn(const std::string& pieceType, bool aleat)
 }
 
 // Gérer la popup de fin de partie
+// void Board::handleGameOverPopup()
+// {
+//     if (is_game_over())
+//     {
+//         ImGui::OpenPopup("Game Over");
+//     }
+
+//     if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+//     {
+//         ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+
+//         if (ImGui::Button("Quitter"))
+//         {
+//             exit(0); // Ferme le programme
+//         }
+
+//         ImGui::EndPopup();
+//     }
+// }
+
 void Board::handleGameOverPopup()
 {
-    if (is_game_over())
+    if (is_game_over().first)
     {
-        ImGui::OpenPopup("Game Over");
-    }
+        std::string winner;
+        switch (is_game_over().second)
+        {
+        case 1: winner = "Black"; break;
+        case 2: winner = "White"; break;
+        default: break;
+        };
 
-    if (ImGui::BeginPopupModal("Game Over", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::Text("Le roi a été capturé ! La partie est terminée.");
+        // Obtenir les dimensions de la fenêtre
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        ImVec2 windowPos  = ImGui::GetWindowPos();
 
-        if (ImGui::Button("Quitter"))
+        // Créer un fond semi-transparent sur tout l'écran
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            windowPos,
+            ImVec2(windowPos.x + windowSize.x, windowPos.y + windowSize.y),
+            IM_COL32(0, 0, 0, 200) // Noir semi-transparent
+        );
+
+        // Calculer la position pour le texte de fin de jeu
+        ImVec2 textPos = ImVec2(
+            windowPos.x + windowSize.x * 0.5f,
+            windowPos.y + windowSize.y * 0.4f
+        );
+
+        // Taille du texte et couleur
+        float textSize    = 72.0f;
+        ImU32 textColor   = winner == "White" ? IM_COL32(220, 220, 220, 255) : IM_COL32(50, 50, 50, 255);
+        ImU32 shadowColor = IM_COL32(0, 0, 0, 150);
+
+        // Texte principal avec effet d'ombre
+        std::string gameOverText = winner + " Wins!";
+
+        // // Ajouter l'ombre du texte
+        // ImGui::GetWindowDrawList()->AddText(
+        //     chosenFont,
+        //     textSize,
+        //     ImVec2(textPos.x - textSize * 2.5f + 3, textPos.y + 3), // Décalage de l'ombre
+        //     shadowColor,
+        //     gameOverText.c_str()
+        // );
+
+        // Ajouter le texte principal
+        ImGui::GetWindowDrawList()->AddText(
+            chosenFont,
+            textSize,
+            ImVec2(textPos.x - textSize * 2.5f, textPos.y),
+            textColor,
+            gameOverText.c_str()
+        );
+
+        // Ajouter un bouton pour quitter
+        ImVec2 buttonPos = ImVec2(
+            windowPos.x + windowSize.x * 0.5f - 50,
+            windowPos.y + windowSize.y * 0.6f
+        );
+
+        ImGui::SetCursorScreenPos(buttonPos);
+        if (ImGui::Button("Quit Game", ImVec2(100, 40)))
         {
             exit(0); // Ferme le programme
         }
-
-        ImGui::EndPopup();
     }
 }
 
@@ -427,4 +529,14 @@ bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& posit
 bool Board::is_piece_at(const std::pair<int, int>& pos)
 {
     return grid[pos.first][pos.second] != nullptr;
+}
+
+void Board::handleRandom()
+{
+    ImGui::SetCursorPos(ImVec2(10, 10)); // Positionnez le bouton où vous voulez
+    if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
+    {
+        activate_random = !activate_random;
+        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+    }
 }

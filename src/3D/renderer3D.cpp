@@ -1,15 +1,16 @@
 // Renderer3D.cpp
 #include "Renderer3D.hpp"
-#include "Camera.hpp"
-#include "Skybox.hpp"
-#include <iostream>
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <fstream>
-#include <sstream>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <iostream>
+#include <sstream>
+#include "Camera.hpp"
+#include "Skybox.hpp"
+
 
 Renderer3D::Renderer3D()
     : m_shaderProgram(0), m_boardShader(0), m_boardVAO(0), m_boardVBO(0), m_boardEBO(0) {}
@@ -26,8 +27,8 @@ Renderer3D::~Renderer3D()
 void Renderer3D::init()
 {
     // === Skybox shaders ===
-    GLuint vs = compileShader("../../assets/shaders/skybox.vs.glsl", GL_VERTEX_SHADER);
-    GLuint fs = compileShader("../../assets/shaders/skybox.fs.glsl", GL_FRAGMENT_SHADER);
+    GLuint vs       = compileShader("../../assets/shaders/skybox.vs.glsl", GL_VERTEX_SHADER);
+    GLuint fs       = compileShader("../../assets/shaders/skybox.fs.glsl", GL_FRAGMENT_SHADER);
     m_shaderProgram = linkProgram(vs, fs);
 
     std::vector<std::string> faces = {
@@ -40,17 +41,18 @@ void Renderer3D::init()
     };
 
     m_skybox.init(faces);
-    std::cout << "Skybox loaded!" << std::endl;
+    // std::cout << "Skybox loaded!" << std::endl;
 
     // === Plateau 3D ===
-    if (!m_boardModel.loadFromFile("../../assets/models/board/board.obj")) {
+    if (!m_boardModel.loadFromFile("../../assets/models/board/board.obj"))
+    {
         std::cerr << "Erreur : Impossible de charger le modèle du plateau." << std::endl;
         return;
     }
 
     GLuint boardVS = compileShader("../../assets/shaders/board.vs.glsl", GL_VERTEX_SHADER);
     GLuint boardFS = compileShader("../../assets/shaders/board.fs.glsl", GL_FRAGMENT_SHADER);
-    m_boardShader = linkProgram(boardVS, boardFS);
+    m_boardShader  = linkProgram(boardVS, boardFS);
 
     glGenVertexArrays(1, &m_boardVAO);
     glGenBuffers(1, &m_boardVBO);
@@ -84,20 +86,20 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     // Calcul de la matrice de vue
     glm::mat4 view = camera.getViewMatrix();
 
-    // Vérifier la matrice de vue (affichage des valeurs)
-    std::cout << "Matrice de vue :\n";
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            std::cout << view[i][j] << " ";  // Afficher chaque élément de la matrice
-        }
-        std::cout << std::endl;
-    }
+    // // Vérifier la matrice de vue (affichage des valeurs)
+    // std::cout << "Matrice de vue :\n";
+    // for (int i = 0; i < 4; ++i) {
+    //     for (int j = 0; j < 4; ++j) {
+    //         std::cout << view[i][j] << " ";  // Afficher chaque élément de la matrice
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     // Clear buffers (on efface la profondeur et la couleur)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // === Skybox ===
-    glDepthFunc(GL_LEQUAL); // On permet à la skybox de "passer" au-dessus des autres objets
+    glDepthFunc(GL_LEQUAL);                            // On permet à la skybox de "passer" au-dessus des autres objets
     glm::mat4 skyboxView = glm::mat4(glm::mat3(view)); // Enlever la translation de la vue pour la skybox
     m_skybox.render(m_shaderProgram, projection, skyboxView);
     glDepthFunc(GL_LESS); // On repasse à la profondeur standard pour le reste
@@ -105,8 +107,8 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     // === Plateau ===
     glUseProgram(m_boardShader);
 
-    GLuint projLoc = glGetUniformLocation(m_boardShader, "uProjection");
-    GLuint viewLoc = glGetUniformLocation(m_boardShader, "uView");
+    GLuint projLoc  = glGetUniformLocation(m_boardShader, "uProjection");
+    GLuint viewLoc  = glGetUniformLocation(m_boardShader, "uView");
     GLuint modelLoc = glGetUniformLocation(m_boardShader, "uModel");
 
     // Envoi des matrices au shader du plateau
@@ -122,12 +124,11 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     glBindVertexArray(0);
 }
 
-
-
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
 {
     std::ifstream file(path);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Failed to open shader file: " << path << std::endl;
         return 0;
     }
@@ -135,7 +136,7 @@ GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
     std::stringstream ss;
     ss << file.rdbuf();
     std::string sourceStr = ss.str();
-    const char* source = sourceStr.c_str();
+    const char* source    = sourceStr.c_str();
 
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
@@ -143,12 +144,16 @@ GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
 
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         char log[512];
         glGetShaderInfoLog(shader, 512, nullptr, log);
-        std::cerr << "Shader compilation failed (" << path << "):\n" << log << std::endl;
-    } else {
-        std::cout << "Shader compiled successfully: " << path << std::endl;
+        std::cerr << "Shader compilation failed (" << path << "):\n"
+                  << log << std::endl;
+    }
+    else
+    {
+        // std::cout << "Shader compiled successfully: " << path << std::endl;
     }
 
     return shader;
@@ -163,20 +168,25 @@ GLuint Renderer3D::linkProgram(GLuint vs, GLuint fs)
 
     GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         char log[512];
         glGetProgramInfoLog(program, 512, nullptr, log);
-        std::cerr << "Program linking failed:\n" << log << std::endl;
+        std::cerr << "Program linking failed:\n"
+                  << log << std::endl;
     }
 
     glValidateProgram(program);
     glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
-    if (success == GL_FALSE) {
+    if (success == GL_FALSE)
+    {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
         std::cerr << "Program validation failed: " << infoLog << std::endl;
-    } else {
-        std::cout << "Program validated successfully!" << std::endl;
+    }
+    else
+    {
+        // std::cout << "Program validated successfully!" << std::endl;
     }
 
     glDeleteShader(vs);

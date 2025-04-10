@@ -1,19 +1,18 @@
+#include <glad/glad.h>
 #include <imgui.h>
 #include <chrono>
 #include <functional>
 #include <iostream>
 #include <random>
-#include "glm/glm.hpp"
+#include "3D/Camera.hpp" // Inclure la classe Camera
 #include "3D/Model3D.hpp"
+#include "3D/Renderer3D.hpp"
 #include "board.hpp"
-#include "glad/glad.h"
-#include "maths.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/fwd.hpp"
+#include "glm/glm.hpp"
+#include "maths.hpp"
 #include "quick_imgui/quick_imgui.hpp"
-
-#include "3D/Renderer3D.hpp"
-#include "3D/Camera.hpp"  // Inclure la classe Camera
 
 int main()
 {
@@ -21,7 +20,7 @@ int main()
     RandomDistributions random;
 
     // Créer une instance de Board et Renderer3D
-    Board board;
+    Board      board;
     Renderer3D renderer;
 
     // Initialiser la caméra avec une position (ici, 3 unités en avant sur l'axe Z)
@@ -31,13 +30,13 @@ int main()
     float lastFrame = 0.0f;
 
     quick_imgui::loop(
-        "Chess 3D", 
+        "Chess 3D",
         {
             // Initialisation
             .init = [&]() {
-                // Initialiser le rendu 3D
+                board.init();
                 renderer.init();
-                glEnable(GL_DEPTH_TEST);  // Activer le test de profondeur
+                glEnable(GL_DEPTH_TEST); // Activer le test de profondeur
             },
 
             // Boucle principale
@@ -60,19 +59,14 @@ int main()
                 glm::mat4 view = camera.getViewMatrix();
 
                 // Rendu 3D
-                renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera);
-            },
+                renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera); },
 
             // Callbacks pour les événements de clavier, souris et redimensionnement de fenêtre
-            .key_callback = [](int key, int scancode, int action, int mods) {
-                std::cout << "Key: " << key << " Scancode: " << scancode
-                          << " Action: " << action << " Mods: " << mods << '\n';
-            },
+            .key_callback = [](int key, int scancode, int action, int mods) { std::cout << "Key: " << key << " Scancode: " << scancode
+                                                                                        << " Action: " << action << " Mods: " << mods << '\n'; },
 
-            .mouse_button_callback = [](int button, int action, int mods) {
-                std::cout << "Button: " << button << " Action: " << action
-                          << " Mods: " << mods << '\n';
-            },
+            .mouse_button_callback = [](int button, int action, int mods) { std::cout << "Button: " << button << " Action: " << action
+                                                                                      << " Mods: " << mods << '\n'; },
 
             .cursor_position_callback = [&](double xpos, double ypos) {
                 // Traiter le mouvement de la souris pour la caméra
@@ -84,9 +78,7 @@ int main()
                 camera.processMouseScroll(yoffset); // Mise à jour du zoom de la caméra
             },
 
-            .window_size_callback = [](int width, int height) {
-                std::cout << "Resized: " << width << ' ' << height << '\n';
-            },
+            .window_size_callback = [](int width, int height) { std::cout << "Resized: " << width << ' ' << height << '\n'; },
         }
     );
 
