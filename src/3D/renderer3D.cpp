@@ -48,20 +48,18 @@ void Renderer3D::initializePieces()
         "pawn7", "pawn8"
     };
 
-    // Ajouter les pièces blanches
     for (const std::string& name : whitePieceNames) {
         Pion pion;
         pion.modelName = name;
-        pion.isWhite = true;  // Marquer comme une pièce blanche
+        pion.isWhite = true;
         m_pion.push_back(pion);
         std::cout << "[Renderer3D] Pièce blanche ajoutée : " << name << std::endl;
     }
 
-    // Ajouter les pièces noires
     for (const std::string& name : blackPieceNames) {
         Pion pion;
         pion.modelName = name;
-        pion.isWhite = false; // Marquer comme une pièce noire
+        pion.isWhite = false;
         m_pion.push_back(pion);
         std::cout << "[Renderer3D] Pièce noire ajoutée : " << name << std::endl;
     }
@@ -143,6 +141,7 @@ void Renderer3D::init()
 
         setupModelBuffers(pion.VAO, pion.VBO, pion.EBO, pion.model.getVertices(), pion.model.getIndices());
     }
+    
 
     std::cout << "[Renderer3D] Initialisation terminée." << std::endl;
 }
@@ -186,32 +185,24 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     for (size_t i = 0; i < m_pion.size(); ++i) {
         const auto& pion = m_pion[i];
         
-        // Utilisation d'un décalage spécifique à chaque pièce (par exemple, en fonction de l'index)
-        glm::vec3 offset(0.0f, 0.0f, 0.0f);
+        glm::vec3 offset(0.0f, 1.0f, 0.0f);
     
-        // Si tu veux que les pièces soient placées sur des cases d'un échiquier
-        // tu peux calculer l'offset basé sur l'indice.
-        // Exemple : Décalage selon l'index sur un échiquier 8x8
-        int row = i / 8; // Ligne
-        int col = i % 8; // Colonne
-        offset = glm::vec3(col, 0.0f, row); // Décalage en X et Z pour un échiquier 3D
-    
-        // Si tu veux un décalage plus uniforme (espacement horizontal)
-        // offset = glm::vec3(i * 2.0f, 0.0f, 0.0f);  // Ajuster le facteur selon le besoin
+        int row = i / 8;
+        int col = i % 8;
+        offset.x = col;
+        offset.z = row;
         
-        // Appliquer le modèle de la pièce
         glUseProgram(m_boardShader);
+        
         glm::vec3 pieceCenter = calculateCenter(pion.model.getVertices());
-        glm::mat4 pieceModel = glm::translate(glm::mat4(1.0f), -pieceCenter);  // Centrer la pièce
-        pieceModel = glm::translate(pieceModel, offset); // Appliquer le décalage
+        glm::mat4 pieceModel = glm::translate(glm::mat4(1.0f), -pieceCenter);
+        pieceModel = glm::translate(pieceModel, offset);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(pieceModel));
         
-        // Dessiner la pièce
         drawTexturedModel(m_boardShader, pion.model.textureID, pion.VAO, pion.model.getIndices());
     }
-    
-
 }
+
 
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
 {
