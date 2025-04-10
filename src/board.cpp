@@ -213,7 +213,7 @@ void Board::renderPieceAt(Piece* piece, int x, int y)
     ImGui::PushFont(chosenFont);
 
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
-    ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(0, 0, 0, 255) : IM_COL32(255, 255, 255, 255));
+    ImGui::PushStyleColor(ImGuiCol_Text, piece->get_color() == Piece::Color::White ? IM_COL32(255, 255, 255, 255) : IM_COL32(0, 0, 0, 255));
 
     if (ImGui::Button(button_label.c_str(), ImVec2(square_size, square_size)))
     {
@@ -251,8 +251,8 @@ void Board::renderPossibleMoves()
         // Obtenir les mouvements possibles de la pièce
         std::vector<std::pair<int, int>> moves = piece->possible_moves(grid);
 
-        std::cout << "Mouvements possibles pour la pièce sélectionnée: ("
-                  << selected_pos.first << ", " << selected_pos.second << ")\n";
+        // std::cout << "Mouvements possibles pour la pièce sélectionnée: ("
+        //           << selected_pos.first << ", " << selected_pos.second << ")\n";
 
         for (const auto& move : moves)
         {
@@ -513,7 +513,7 @@ void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std
 // Vérifier si un pion peut être promu
 bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& position)
 {
-    if ((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7))
+    if (((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7)) && !is_game_over().first)
     {
         std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
         // Activer la promotion
