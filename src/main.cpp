@@ -14,6 +14,8 @@
 #include "maths.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
+// Pour faire un push nul
+
 int main()
 {
     // Créer un générateur de nombres aléatoires avec graine par défaut
