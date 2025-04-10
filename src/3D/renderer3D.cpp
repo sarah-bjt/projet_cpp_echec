@@ -6,10 +6,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <sstream>
-#include "Camera.hpp"
-#include "Skybox.hpp"
+#include <glad/glad.h>
 
 
 Renderer3D::Renderer3D()
@@ -80,8 +77,9 @@ void Renderer3D::init()
 
 void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float deltaTime, Camera& camera)
 {
-    // Mise à jour de la position de la caméra selon les entrées clavier
-    camera.processKeyboard(window, deltaTime);
+    // Mise à jour de l'état des touches de la caméra
+    // Assume que tu as une méthode pour gérer les entrées clavier dans Camera
+    camera.processMovement(deltaTime);
 
     // Calcul de la matrice de vue
     glm::mat4 view = camera.getViewMatrix();
@@ -95,6 +93,7 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     //     std::cout << std::endl;
     // }
 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     // Clear buffers (on efface la profondeur et la couleur)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -127,35 +126,29 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)
 {
     std::ifstream file(path);
-    if (!file.is_open())
-    {
-        std::cerr << "Failed to open shader file: " << path << std::endl;
+    if (!file.is_open()) {
+        std::cerr << "Erreur : Impossible d'ouvrir le fichier shader : " << path << std::endl;
         return 0;
     }
 
-    std::stringstream ss;
-    ss << file.rdbuf();
-    std::string sourceStr = ss.str();
-    const char* source    = sourceStr.c_str();
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string shaderCode = buffer.str();
+    const char* shaderSource = shaderCode.c_str();
 
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, nullptr);
+    glShaderSource(shader, 1, &shaderSource, nullptr);
     glCompileShader(shader);
 
+    // Vérification des erreurs de compilation
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        char log[512];
-        glGetShaderInfoLog(shader, 512, nullptr, log);
-        std::cerr << "Shader compilation failed (" << path << "):\n"
-                  << log << std::endl;
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+        std::cerr << "Erreur de compilation du shader (" << path << "):\n" << infoLog << std::endl;
+        return 0;
     }
-    else
-    {
-        // std::cout << "Shader compiled successfully: " << path << std::endl;
-    }
-
     return shader;
 }
 
@@ -166,31 +159,14 @@ GLuint Renderer3D::linkProgram(GLuint vs, GLuint fs)
     glAttachShader(program, fs);
     glLinkProgram(program);
 
+    // Vérification du lien du programme
     GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        char log[512];
-        glGetProgramInfoLog(program, 512, nullptr, log);
-        std::cerr << "Program linking failed:\n"
-                  << log << std::endl;
-    }
-
-    glValidateProgram(program);
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &success);
-    if (success == GL_FALSE)
-    {
+    if (!success) {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "Program validation failed: " << infoLog << std::endl;
+        std::cerr << "Erreur de linkage du programme :\n" << infoLog << std::endl;
+        return 0;
     }
-    else
-    {
-        // std::cout << "Program validated successfully!" << std::endl;
-    }
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
     return program;
 }

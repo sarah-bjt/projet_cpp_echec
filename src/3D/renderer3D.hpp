@@ -1,4 +1,3 @@
-// Renderer3D.hpp
 #pragma once
 #include <glad/glad.h>  // Toujours inclure glad avant d'inclure d'autres en-têtes OpenGL
 #include <glm/glm.hpp>
@@ -6,6 +5,8 @@
 #include "Camera.hpp"
 #include "Skybox.hpp"
 #include "Model3D.hpp"  // Modèle pour le plateau ou autres objets 3D
+#include <GLFW/glfw3.h>
+
 
 class Renderer3D {
 public:
@@ -13,7 +14,7 @@ public:
     ~Renderer3D();
 
     void init();
-    void render(const glm::mat4& projection, GLFWwindow* window, float deltaTime, Camera& camera);
+    void render(const glm::mat4& projection, GLFWwindow* window, float deltaTime, Camera& camera);  // Supprimez GLFWwindow* de cette fonction, on passe la caméra directement
 
 private:
     // Skybox
