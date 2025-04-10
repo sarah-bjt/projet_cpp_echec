@@ -8,6 +8,7 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float 
     : m_position(position), m_worldUp(up), m_yaw(yaw), m_pitch(pitch),
       m_movementSpeed(2.5f), m_zoom(45.0f), m_radius(10.0f), m_minPitch(-89.0f), m_maxPitch(89.0f)
 {
+    std::fill(std::begin(m_keys), std::end(m_keys), false);
     updateCameraVectors();
 }
 
