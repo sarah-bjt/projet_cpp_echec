@@ -1,9 +1,9 @@
 #include <imgui.h>
 #include <board.hpp>
+#include <set>
 #include <string>
 #include <vector>
 #include "maths.hpp"
-#include "random.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -11,6 +11,52 @@ ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
     return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 } // namespace
+
+std::vector<std::pair<int, int>> Board::stickyTiles()
+{
+    std::vector<std::pair<int, int>> tiles;
+    int                              nbrTiles = globalRandom.uniformDiscrete(3, 10);
+
+    for (int i = 0; i < nbrTiles; ++i)
+    {
+        int x = globalRandom.uniformDiscrete(0, 7); // index entre 0 et 7 inclus
+        int y = globalRandom.uniformDiscrete(0, 7);
+        tiles.push_back({x, y});
+    }
+    return tiles;
+}
+
+std::vector<std::pair<int, int>> Board::visiblySticky(std::vector<std::pair<int, int>> tiles)
+{
+    int nbrVisibleSticky = globalRandom.binomial(tiles.size(), 0.5);
+
+    std::set<int> selectedIndices;
+
+    while (selectedIndices.size() < nbrVisibleSticky)
+    {
+        int idx = globalRandom.uniformDiscrete(0, tiles.size() - 1);
+        selectedIndices.insert(idx); // évite les doublons
+    }
+
+    std::vector<std::pair<int, int>> visibleTiles;
+    for (int idx : selectedIndices)
+    {
+        visibleTiles.push_back(tiles[idx]);
+    }
+
+    return visibleTiles;
+}
+
+std::vector<float> Board::roundSize(auto visibleTiles)
+{
+    std::vector<float> sizes;
+    for (const auto& tile : visibleTiles)
+    {
+        float randomSize = globalRandom.normal(square_size * 0.25f, square_size * 0.05f);
+        sizes.push_back(randomSize);
+    }
+    return sizes;
+}
 
 Board::~Board()
 {
@@ -29,13 +75,18 @@ void Board::handleRandom()
     if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
     {
         activate_random = !activate_random;
-        std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
+        // std::cout << "Random mode: " << (activate_random ? "enabled" : "disabled") << std::endl;
     }
 }
 
 // Méthode d'initialisation du plateau ----------------------------------------------------------------------------------------------------------------------------------
 void Board::init()
 {
+    // Initialiser les cases collantes
+    stickingTiles      = stickyTiles();
+    visibleStickyTiles = visiblySticky(stickingTiles);
+    stikySizes         = roundSize(visibleStickyTiles);
+
     // charge des fonts
     ImGuiIO& io       = ImGui::GetIO();
     float    fontSize = 17.0f;
@@ -71,8 +122,19 @@ void Board::init()
     double randomColorV = (globalRandom.uniformContinuous(50, 200));
     double randomColorB = (globalRandom.uniformContinuous(50, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
-    dotColor_light      = IM_COL32(randomColorR + 55, randomColorV + 55, randomColorB + 55, 200);
-    dotColor_dark       = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
+
+    float blendFactor = 0.7;
+
+    int lightR = randomColorR + blendFactor * (255 - randomColorR);
+    int lightG = randomColorV + blendFactor * (255 - randomColorV);
+    int lightB = randomColorB + blendFactor * (255 - randomColorB);
+
+    lightR = std::min(255, lightR);
+    lightG = std::min(255, lightG);
+    lightB = std::min(255, lightB);
+
+    dotColor_light = IM_COL32(lightR, lightG, lightB, 230);
+    dotColor_dark  = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
 
     // les pièces blanches
     placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
@@ -112,6 +174,10 @@ void Board::render()
     square_size = windowSize.x / 9.0f;
     handleRandom();
     renderBoardSquares();
+    if (activate_random)
+    {
+        renderStickyStuff(visibleStickyTiles);
+    }
     renderPieces();
 
     if (selected_piece)
@@ -158,6 +224,18 @@ void Board::renderPieces()
                 renderPieceAt(piece, x, y);
             }
         }
+    }
+}
+
+// Afficher le sticky stuff
+void Board::renderStickyStuff(auto visiblyStickyTiles)
+{
+    int index = 0;
+    for (const auto& tile : visiblyStickyTiles)
+    {
+        ImVec2 pos = board_pos + ImVec2(tile.first * square_size, (7 - tile.second) * square_size);
+        ImGui::GetWindowDrawList()->AddCircleFilled(pos + ImVec2(square_size / 2, square_size / 2), stikySizes[index], IM_COL32(0, 250, 0, 80));
+        index++;
     }
 }
 
@@ -262,7 +340,6 @@ void Board::handleMoveSelection(const std::pair<int, int>& move)
     if (ImGui::IsMouseHoveringRect(move_pos, ImVec2(move_pos.x + square_size, move_pos.y + square_size))
         && ImGui::IsMouseClicked(0))
     {
-        std::cout << "Déplacement effectué vers (" << move.first << ", " << move.second << ")\n";
         movePiece(selected_pos, move);
         selected_piece = false; // Désélectionner après déplacement
     }
@@ -291,6 +368,39 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
         return false;
     }
 
+    if (activate_random)
+    {
+        // Vérifier si la case de départ est collante
+        static std::map<std::pair<int, int>, int> tileAttempts;
+        static std::map<std::pair<int, int>, int> tileThresholds;
+
+        // Vérifier si la case est dans la liste des cases collantes
+        auto isSticky = std::find(stickingTiles.begin(), stickingTiles.end(), from) != stickingTiles.end();
+
+        if (isSticky)
+        {
+            // Initialiser le seuil de tentatives pour cette case si nécessaire
+            if (tileThresholds.find(from) == tileThresholds.end())
+            {
+                tileThresholds[from] = globalRandom.geometric(0.75);
+                tileAttempts[from]   = 0;
+            }
+
+            // Incrémenter le compteur d'essais pour cette case
+            tileAttempts[from]++;
+
+            if (tileAttempts[from] <= tileThresholds[from])
+            {
+                performMove(piece, from, from);
+                return false;
+            }
+            else
+            {
+                tileAttempts[from] = 0;
+            }
+        }
+    }
+
     capturePieceIfPresent(to);
     performMove(piece, from, to);
 
@@ -316,10 +426,11 @@ bool Board::isValidMove(Piece* piece, const std::pair<int, int>& from, const std
 // Effectuer le déplacement d'une pièce
 void Board::performMove(Piece* piece, const std::pair<int, int>& from, const std::pair<int, int>& to)
 {
-    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
-    grid[to.first][to.second]     = piece;   // Mettre à jour la grille
     grid[from.first][from.second] = nullptr; // Libérer la case d'origine
-    last_moved_piece_color        = piece->get_color();
+    piece->move(to, grid);                   // Effectuer le mouvement dans la pièce
+    grid[to.first][to.second] = piece;       // Mettre à jour la grille
+
+    last_moved_piece_color = piece->get_color();
 }
 
 // Capturer une pièce si elle est présente à la position spécifiée
@@ -340,7 +451,6 @@ bool Board::checkForPawnPromotion(Piece* piece, const std::pair<int, int>& posit
 {
     if (((piece->get_type() == "White Pawn" || piece->get_type() == "Black Pawn") && (position.second == 0 || position.second == 7)) && !is_game_over().first)
     {
-        std::cout << "Le pion atteint la dernière ligne et peut être promu !" << std::endl;
         // Activer la promotion
         promotion_active = true;
         promotion_pos    = position;

@@ -53,31 +53,10 @@ void Piece::promote(std::string newType, bool random)
         name = Name::Knight;
     if (random)
     {
-        name = static_cast<Name>(globalRandom.uniformDiscrete(0, 4));
-        std::cout << get_type() << std::endl;
+        name  = static_cast<Name>(globalRandom.uniformDiscrete(0, 5));
         color = (globalRandom.bernoulli(0.7)) ? color : (color == Color::White ? Color::Black : Color::White);
     }
 }
-
-// void Piece::promote(std::string newType, bool aleat)
-// {
-//     if (newType == "Queen")
-//         name = Name::Queen;
-//     else if (newType == "Rook")
-//         name = Name::Rook;
-//     else if (newType == "Bishop")
-//         name = Name::Bishop;
-//     else if (newType == "Knight")
-//         name = Name::Knight;
-//     if (aleat)
-//     {
-//         bool newColor = (globalRandom.bernoulli(0.7) ? "Black" : "White");
-//         if (newColor)
-//         {
-//             color = Color::Black;
-//         }
-//     }
-// }
 
 Piece::Color Piece::get_color() const
 {
@@ -158,15 +137,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             if (x + 1 < 8 && y + 1 < 8 && is_enemy({x + 1, y + 1}, board))
                 possible_moves.push_back({x + 1, y + 1});
 
-            // Promotion si le pion atteint la dernière ligne
-            if (y == 6)
-            {
-                // Le pion atteint la dernière ligne (promotion possible)
-                std::cout << "Le pion blanc atteint la dernière ligne et peut être promu !" << std::endl;
-                // Ajoutez ici la logique pour effectuer la promotion du pion.
-            }
-
-            // Prise en passant (si un pion adverse a bougé de deux cases)
+            // Prise en passant (si un pion adverse a bougé de deux cases) - Pas terminer il manque la disparition de la piece adverse
             // if (y == 4)
             // {
             //     // Vérification des pions adverses qui se trouvent sur la même ligne
@@ -196,15 +167,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             if (x + 1 < 8 && y - 1 >= 0 && is_enemy({x + 1, y - 1}, board))
                 possible_moves.push_back({x + 1, y - 1});
 
-            // Promotion si le pion atteint la dernière ligne
-            if (y == 1)
-            {
-                // Le pion atteint la dernière ligne (promotion possible)
-                std::cout << "Le pion noir atteint la dernière ligne et peut être promu !" << std::endl;
-                // Ajoutez ici la logique pour effectuer la promotion du pion.
-            }
-
-            // Prise en passant (si un pion adverse a bougé de deux cases)
+            // Prise en passant (si un pion adverse a bougé de deux cases) - Pas terminer il manque la disparition de la piece adverse
             // if (y == 3)
             // {
             //     // Vérification des pions adverses qui se trouvent sur la même ligne
@@ -296,11 +259,5 @@ void Piece::move(const std::pair<int, int>& newPosition, std::vector<std::vector
         board[position.first][position.second]       = nullptr; // Libérer l'ancienne case
         position                                     = newPosition;
         board[newPosition.first][newPosition.second] = this; // Nouvelle position
-
-        std::cout << get_type() << " se déplace en (" << newPosition.first << ", " << newPosition.second << ")." << std::endl;
-    }
-    else
-    {
-        std::cout << "Déplacement invalide !" << std::endl;
     }
 }

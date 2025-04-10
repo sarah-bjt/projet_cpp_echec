@@ -1,6 +1,7 @@
 #pragma once
 #include <imgui.h>
 #include <iostream>
+#include <map>
 #include <vector>
 #include "piece.hpp"
 #include "quick_imgui/quick_imgui.hpp"
@@ -8,12 +9,14 @@
 class Board {
 private:
     // utilisation du random
-    bool   activate_random = false;
-    double randomColorR;
-    double randomColorV;
-    double randomColorB;
-    ImU32  squareColor;
-    ImU32  dotColor_light, dotColor_dark;
+    double                           randomColorR;
+    double                           randomColorV;
+    double                           randomColorB;
+    ImU32                            squareColor;
+    ImU32                            dotColor_light, dotColor_dark;
+    std::vector<std::pair<int, int>> visibleStickyTiles; // Pour les cases collantes visibles
+    std::vector<std::pair<int, int>> stickingTiles;      // Pour les cases collantes
+    std::vector<float>               stikySizes;         // Pour les tailles des cases collantes
 
     // initialisation du plateau
     std::vector<std::vector<Piece*>> grid{8, std::vector<Piece*>(8, nullptr)}; // Grille de 8x8 pour le plateau d'échecs
@@ -40,6 +43,7 @@ private:
     void renderPossibleMoves();
     void renderMoveIndicator(Piece* piece, const std::pair<int, int>& move);
     void renderSelectionInfo();
+    void renderStickyStuff(auto visiblyStickyTiles);
 
     // Méthodes de gestion d'interaction
     void handlePieceSelection(int x, int y);
@@ -59,13 +63,16 @@ private:
 public:
     Board() = default;
     ~Board();
-
-    void        init();
-    void        render();
-    void        placePiece(Piece* piece, int x, int y);
-    bool        movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to);
-    Piece*      get_piece_at(const std::pair<int, int>& pos);
-    bool        is_valid_move(const std::pair<int, int>& from, const std::pair<int, int>& to);
-    bool        is_piece_at(const std::pair<int, int>& pos);
-    std::string getPieceButtonLabel(const std::string& piece_type, const std::string& color);
+    bool                             activate_random = false;
+    std::vector<std::pair<int, int>> stickyTiles();
+    std::vector<std::pair<int, int>> visiblySticky(std::vector<std::pair<int, int>> tiles);
+    std::vector<float>               roundSize(auto visibleTiles);
+    void                             init();
+    void                             render();
+    void                             placePiece(Piece* piece, int x, int y);
+    bool                             movePiece(const std::pair<int, int>& from, const std::pair<int, int>& to);
+    Piece*                           get_piece_at(const std::pair<int, int>& pos);
+    bool                             is_valid_move(const std::pair<int, int>& from, const std::pair<int, int>& to);
+    bool                             is_piece_at(const std::pair<int, int>& pos);
+    std::string                      getPieceButtonLabel(const std::string& piece_type, const std::string& color);
 };
