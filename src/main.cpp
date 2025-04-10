@@ -41,26 +41,28 @@ int main()
                 board.init();
                 renderer.init();
                 glEnable(GL_DEPTH_TEST); // Activer le test de profondeur
-            },
+                glfwSetWindowSizeLimits(glfwGetCurrentContext(), 840, 720,840, 720); },
 
             // Boucle principale
             .loop = [&]() {
                 // Calcul du temps écoulé depuis le dernier frame pour le deltaTime
                 float currentFrame = static_cast<float>(glfwGetTime());
-                float deltaTime = currentFrame - lastFrame;
-                lastFrame = currentFrame;
+                float deltaTime    = currentFrame - lastFrame;
+                lastFrame          = currentFrame;
 
                 // 🎮 Mouvements de la caméra (clavier)
                 camera.processMovement(deltaTime); // Traite les déplacements de la caméra
 
                 // Début de la fenêtre ImGui pour afficher le plateau 2D
+                ImGui::SetNextWindowPos(ImVec2(850, 20), ImGuiCond_Once);
+                ImGui::SetNextWindowSize(ImVec2(500, 720), ImGuiCond_Once);
                 ImGui::Begin("Chess 2D");
                 board.render();
                 ImGui::End();
 
                 // Matrices de transformation
                 glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), 1280.f / 720.f, 0.1f, 100.0f);
-                glm::mat4 view = camera.getViewMatrix();
+                glm::mat4 view       = camera.getViewMatrix();
 
                 // Rendu 3D
                 renderer.render(projection, glfwGetCurrentContext(), deltaTime, camera); // Passer window
@@ -73,8 +75,7 @@ int main()
                     camera.keyState(key, true);  // Appuyer sur la touche
                 } else if (action == GLFW_RELEASE) {
                     camera.keyState(key, false); // Relâcher la touche
-                }
-            },
+                } },
 
             .mouse_button_callback = [](int button, int action, int mods) {
                 // Nous n'avons plus besoin de gérer les événements de souris ici.
@@ -87,9 +88,7 @@ int main()
                 // Ne rien faire ici
             },
 
-            .window_size_callback = [](int width, int height) {
-                std::cout << "Resized: " << width << ' ' << height << '\n';
-            },
+            .window_size_callback = [](int width, int height) { std::cout << "Resized: " << width << ' ' << height << '\n'; },
         }
     );
 
