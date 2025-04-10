@@ -1,4 +1,3 @@
-// Renderer3D.cpp
 #include "Renderer3D.hpp"
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -10,8 +9,6 @@
 #include <glad/glad.h>
 #include <sstream>
 
-
-
 Renderer3D::Renderer3D()
     : m_shaderProgram(0), m_boardShader(0), m_boardVAO(0), m_boardVBO(0), m_boardEBO(0) {}
 
@@ -22,6 +19,17 @@ Renderer3D::~Renderer3D()
     glDeleteBuffers(1, &m_boardEBO);
     glDeleteProgram(m_shaderProgram);
     glDeleteProgram(m_boardShader);
+}
+
+// Fonction pour calculer le centre du modèle (plateau)
+glm::vec3 calculateCenter(const std::vector<Vertex>& vertices)
+{
+    glm::vec3 center(0.0f, 0.0f, 0.0f);
+    for (const Vertex& vertex : vertices) {
+        center += vertex.position;
+    }
+    center /= static_cast<float>(vertices.size());
+    return center;
 }
 
 void Renderer3D::init()
@@ -41,7 +49,6 @@ void Renderer3D::init()
     };
 
     m_skybox.init(faces);
-    // std::cout << "Skybox loaded!" << std::endl;
 
     // === Plateau 3D ===
     if (!m_boardModel.loadFromFile("../../assets/models/board/board.obj", "../../assets/models/board/board.mtl"))
@@ -81,20 +88,10 @@ void Renderer3D::init()
 void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float deltaTime, Camera& camera)
 {
     // Mise à jour de l'état des touches de la caméra
-    // Assume que tu as une méthode pour gérer les entrées clavier dans Camera
     camera.processMovement(deltaTime);
 
     // Calcul de la matrice de vue
     glm::mat4 view = camera.getViewMatrix();
-
-    // // Vérifier la matrice de vue (affichage des valeurs)
-    // std::cout << "Matrice de vue :\n";
-    // for (int i = 0; i < 4; ++i) {
-    //     for (int j = 0; j < 4; ++j) {
-    //         std::cout << view[i][j] << " ";  // Afficher chaque élément de la matrice
-    //     }
-    //     std::cout << std::endl;
-    // }
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     // Clear buffers (on efface la profondeur et la couleur)
@@ -113,12 +110,29 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     GLuint viewLoc  = glGetUniformLocation(m_boardShader, "uView");
     GLuint modelLoc = glGetUniformLocation(m_boardShader, "uModel");
 
+    GLuint lightPosLoc = glGetUniformLocation(m_boardShader, "lightPos");
+    GLuint viewPosLoc = glGetUniformLocation(m_boardShader, "viewPos");
+
     // Envoi des matrices au shader du plateau
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-    glm::mat4 model = glm::mat4(1.0f);
+    // Calcul du centre du modèle (plateau)
+    glm::vec3 center = calculateCenter(m_boardModel.getVertices());
+
+    // Créer la matrice de modèle avec translation pour centrer le modèle
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), -center); // Translation pour déplacer le centre à l'origine
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    // Envoi de la position de la lumière et de la caméra
+    glm::vec3 lightPos(1.0f, 1.0f, 1.0f);  // Position de la lumière
+
+    // Appliquer la même translation à la lumière pour la garder au bon endroit
+    lightPos = glm::vec3(model * glm::vec4(lightPos, 1.0f));
+
+    glm::vec3 viewPos = camera.getPosition();  // Position de la caméra
+    glUniform3fv(lightPosLoc, 1, glm::value_ptr(lightPos));
+    glUniform3fv(viewPosLoc, 1, glm::value_ptr(viewPos));
 
     // Dessin du plateau
     glBindVertexArray(m_boardVAO);

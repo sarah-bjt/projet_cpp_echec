@@ -7,9 +7,11 @@ uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
 
-out vec2 TexCoord; // Déclare l'output pour la coordonnée de texture
+out vec3 FragPos;
+out vec3 Normal;
 
 void main() {
+    FragPos = vec3(uModel * vec4(aPos, 1.0));
+    Normal = mat3(transpose(inverse(uModel))) * aNormal;
     gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
-    TexCoord = aTexCoord; // Transmets la coordonnée de texture au fragment shader
 }

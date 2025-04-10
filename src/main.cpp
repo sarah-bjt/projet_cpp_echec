@@ -18,16 +18,16 @@
 
 int main()
 {
-    
     // Créer un générateur de nombres aléatoires avec graine par défaut
     RandomDistributions random;
 
     // Créer une instance de Board et Renderer3D
-    Board      board;
+    Board board;
     Renderer3D renderer;
 
-    // Initialiser la caméra avec une position (ici, 3 unités en avant sur l'axe Z)
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+    // Initialisation de la caméra avec les 5 paramètres nécessaires
+    glm::vec3 center(0.0f, 0.0f, 0.0f);  // Le point autour duquel la caméra tourne
+    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, center);
 
     // Variable pour calculer le deltaTime
     float lastFrame = 0.0f;

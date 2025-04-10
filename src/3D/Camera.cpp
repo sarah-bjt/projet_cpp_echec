@@ -3,10 +3,10 @@
 #include <cmath>
 #include <GLFW/glfw3.h> // Assure-toi que cette ligne est présente
 
-
-Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch)
+Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch, const glm::vec3& center)
     : m_position(position), m_worldUp(up), m_yaw(yaw), m_pitch(pitch),
-      m_movementSpeed(2.5f), m_zoom(45.0f), m_radius(10.0f), m_minPitch(-89.0f), m_maxPitch(89.0f)
+      m_movementSpeed(2.5f), m_zoom(45.0f), m_radius(10.0f), m_minPitch(-89.0f), m_maxPitch(89.0f),
+      m_center(center) // Initialisation du centre autour duquel la caméra tourne
 {
     std::fill(std::begin(m_keys), std::end(m_keys), false);
     updateCameraVectors();
@@ -74,13 +74,17 @@ void Camera::setPitchLimits(float minPitch, float maxPitch)
 
 void Camera::updatePosition()
 {
-    // Calculer la nouvelle position sur la sphère
-    m_position.x = m_radius * cos(glm::radians(m_pitch)) * cos(glm::radians(m_yaw));
-    m_position.y = m_radius * sin(glm::radians(m_pitch));
-    m_position.z = m_radius * cos(glm::radians(m_pitch)) * sin(glm::radians(m_yaw));
+    // Calculer la nouvelle position de la caméra autour du centre spécifié (m_center)
+    m_position.x = m_center.x + m_radius * cos(glm::radians(m_pitch)) * cos(glm::radians(m_yaw));
+    m_position.y = m_center.y + m_radius * sin(glm::radians(m_pitch)); // Hauteur fixe
+    m_position.z = m_center.z + m_radius * cos(glm::radians(m_pitch)) * sin(glm::radians(m_yaw));
 
-    // Calculer les vecteurs de la caméra
-    updateCameraVectors();
+    // La direction avant de la caméra (regarde toujours vers le centre)
+    m_front = glm::normalize(m_center - m_position);
+
+    // Calcul des vecteurs droit et haut
+    m_right = glm::normalize(glm::cross(m_front, m_worldUp));
+    m_up    = glm::normalize(glm::cross(m_right, m_front));
 }
 
 void Camera::updateCameraVectors()

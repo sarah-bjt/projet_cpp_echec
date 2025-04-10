@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <vector>
 #define STB_IMAGE_STATIC
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <../../import/stb_image.h>
 
