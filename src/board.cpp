@@ -384,6 +384,11 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
             {
                 tileThresholds[from] = globalRandom.geometric(0.75);
                 tileAttempts[from]   = 0;
+
+                std::cout << "The piece " << piece->get_type() << " got stuck! "
+                          << "try number" << tileAttempts[from] << "/" << tileThresholds[from]
+                          << "to be free" << std::endl;
+                performMove(piece, from, from);
             }
 
             // Incrémenter le compteur d'essais pour cette case
