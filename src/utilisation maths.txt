@@ -1,13 +1,13 @@
-// Pour les maths 
+// Pour les maths
 
-Lois implémentées: 
-UniformeDiscrete --> Typographie + choix des Sticky Tiles
-Bernoulli --> Changement de couleur au moment de la promotion
-Géométrique --> Nombre d'essai avant de sortir d'une sticky Tiles
-Uniforme contine --> Couleur des cases
-Binomiale --> Nombre de réussite pour un nombre de lancé près définie
-Normale --> Taille des tâches
-   
-Lois codées mais pas implémentées
-Exponentielle - Pour un temps d'attente en fonction d'unn lambda
-Gamma - Pour la durée d'un processus
+Lois implémentées :
+- Uniforme discrète → Typographie + choix des Sticky Tiles  
+- Bernoulli → Changement de couleur au moment de la promotion  
+- Géométrique → Nombre d’essais avant de sortir d’une Sticky Tile  
+- Uniforme continue → Couleur des cases  
+- Binomiale → Nombre de réussites pour un nombre de lancers prédéfini  
+- Normale → Taille des tâches  
+
+Lois codées mais non implémentées :
+- Exponentielle → Pour un temps d’attente en fonction d’un lambda  
+- Gamma → Pour la durée d’un processus
