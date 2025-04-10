@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "maths.hpp"
+#include "random.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -24,7 +25,7 @@ Board::~Board()
 
 void Board::handleRandom()
 {
-    ImGui::SetCursorPos(ImVec2(30, 30)); // Positionnez le bouton où vous voulez
+    ImGui::SetCursorPos(ImVec2(30, 30));
     if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
     {
         activate_random = !activate_random;
@@ -70,7 +71,7 @@ void Board::init()
     double randomColorV = (globalRandom.uniformContinuous(50, 200));
     double randomColorB = (globalRandom.uniformContinuous(50, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
-    dotColor_light      = IM_COL32(randomColorR + 50, randomColorV + 50, randomColorB + 50, 200);
+    dotColor_light      = IM_COL32(randomColorR + 55, randomColorV + 55, randomColorB + 55, 200);
     dotColor_dark       = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
 
     // les pièces blanches
@@ -357,7 +358,7 @@ void Board::handlePromotionPopup()
         ImGui::OpenPopup("Promotion");
     }
 
-    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Promotion", nullptr, ImGuiWindowFlags_AlwaysAutoResize) && !activate_random)
     {
         ImGui::Text("Choisissez une promotion:");
 
@@ -377,19 +378,27 @@ void Board::handlePromotionPopup()
         {
             promotePawn("Knight", false);
         }
-        if (ImGui::Button("Aléatoir ;)"))
+        ImGui::EndPopup();
+    }
+    if (activate_random && promotion_active)
+    {
+        ImGui::Text("Oh WOW ! What's this? A random promotion?");
+        if (ImGui::Button("Oh Interesting!"))
         {
-            promotePawn("Knight", true);
+            promotePawn("Pawn", true);
         }
-
+        if (ImGui::Button("No Thanks"))
+        {
+            promotePawn("Pawn", false);
+        }
         ImGui::EndPopup();
     }
 }
 
 // Promouvoir un pion avec le type spécifié
-void Board::promotePawn(const std::string& pieceType, bool aleat)
+void Board::promotePawn(const std::string& pieceType, bool random)
 {
-    promoted_piece->promote(pieceType, aleat);
+    promoted_piece->promote(pieceType, random);
     promotion_active = false;
     ImGui::CloseCurrentPopup();
 }
