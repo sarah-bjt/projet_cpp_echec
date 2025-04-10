@@ -16,6 +16,7 @@ private:
     ImU32                            dotColor_light, dotColor_dark;
     std::vector<std::pair<int, int>> visibleStickyTiles; // Pour les cases collantes visibles
     std::vector<std::pair<int, int>> stickingTiles;      // Pour les cases collantes
+    std::vector<float>               stikySizes;         // Pour les tailles des cases collantes
 
     // initialisation du plateau
     std::vector<std::vector<Piece*>> grid{8, std::vector<Piece*>(8, nullptr)}; // Grille de 8x8 pour le plateau d'échecs
@@ -65,6 +66,7 @@ public:
     bool                             activate_random = false;
     std::vector<std::pair<int, int>> stickyTiles();
     std::vector<std::pair<int, int>> visiblySticky(std::vector<std::pair<int, int>> tiles);
+    std::vector<float>               roundSize(auto visibleTiles);
     void                             init();
     void                             render();
     void                             placePiece(Piece* piece, int x, int y);

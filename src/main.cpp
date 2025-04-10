@@ -14,8 +14,6 @@
 #include "maths.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 
-// Pour faire un push nul
-
 int main()
 {
     // Créer un générateur de nombres aléatoires avec graine par défaut
@@ -50,41 +48,23 @@ int main()
                 float deltaTime    = currentFrame - lastFrame;
                 lastFrame          = currentFrame;
 
-                // 🎮 Mouvements de la caméra (clavier)
+                // Mouvements de la caméra (clavier)
                 camera.processMovement(deltaTime); // Traite les déplacements de la caméra
 
-                // Début de la fenêtre ImGui pour afficher le plateau 2D
-                // ImGui::SetNextWindowPos(ImVec2(850, 20), ImGuiCond_Once);
-                // ImGui::SetNextWindowSize(ImVec2(500, 720), ImGuiCond_Once);
-                // ImGui::Begin("Chess 2D");
-                // board.render();
-                // ImGui::End();
-
-                // ------------------------------------------------------------------
-                // 1. Récupérer la taille de la fenêtre GLFW (viewport)
+                // Réglage des dimentions ------------------------------------------------------------------
                 int         windowWidth, windowHeight;
                 GLFWwindow* window = glfwGetCurrentContext();
                 glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
-                // 2. Définir position et taille dynamiquement
                 float chess2DWidth  = windowWidth * 0.32f;
                 float chess2DHeight = windowWidth * 0.32f + 40.0f;
 
-                // 3. Position : en bas à droite avec marge de 20px
-                float chess2DX = windowWidth - chess2DWidth - 10.0f;  // X : décalé de la droite
-                float chess2DY = windowHeight - chess2DWidth - 20.0f; // Y : décalé du bas
-
-                // std::cout << "Window position: " << chess2DX << ' ' << chess2DY << '\n';
-                // std::cout << "Chess 2D size: " << chess2DWidth << ' ' << chess2DWidth << '\n';
-
-                ImVec2 windowPos  = ImGui::GetWindowPos();  // position en pixels écran
-                ImVec2 windowSize = ImGui::GetWindowSize(); // taille actuelle de la fenêtre
-
-                // 3. Appliquer à ImGui
+                float  chess2DX   = windowWidth - chess2DWidth - 10.0f;
+                float  chess2DY   = windowHeight - chess2DWidth - 20.0f;
+                ImVec2 windowPos  = ImGui::GetWindowPos();
+                ImVec2 windowSize = ImGui::GetWindowSize();
                 ImGui::SetNextWindowPos(ImVec2(chess2DX, chess2DY), ImGuiCond_Always);
                 ImGui::SetNextWindowSize(ImVec2(chess2DWidth, chess2DHeight), ImGuiCond_Always);
-
-                // 4. Fenêtre ImGui
                 ImGui::Begin("Chess 2D");
                 board.render();
                 ImGui::End();

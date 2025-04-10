@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "maths.hpp"
-#include "random.hpp"
 
 namespace {
 ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
@@ -24,7 +23,6 @@ std::vector<std::pair<int, int>> Board::stickyTiles()
         int y = globalRandom.uniformDiscrete(0, 7);
         tiles.push_back({x, y});
     }
-    tiles.push_back({1, 1});
     return tiles;
 }
 
@@ -47,6 +45,17 @@ std::vector<std::pair<int, int>> Board::visiblySticky(std::vector<std::pair<int,
     }
 
     return visibleTiles;
+}
+
+std::vector<float> Board::roundSize(auto visibleTiles)
+{
+    std::vector<float> sizes;
+    for (const auto& tile : visibleTiles)
+    {
+        float randomSize = globalRandom.normal(square_size * 0.25f, square_size * 0.05f);
+        sizes.push_back(randomSize);
+    }
+    return sizes;
 }
 
 Board::~Board()
@@ -76,11 +85,7 @@ void Board::init()
     // Initialiser les cases collantes
     stickingTiles      = stickyTiles();
     visibleStickyTiles = visiblySticky(stickingTiles);
-
-    // for (int i = 0; i < sticky.size(); ++i)
-    // {
-    //     std::cout << "Sticky tile: " << sticky[i].first << ", " << sticky[i].second << std::endl;
-    // };
+    stikySizes         = roundSize(visibleStickyTiles);
 
     // charge des fonts
     ImGuiIO& io       = ImGui::GetIO();
@@ -117,8 +122,19 @@ void Board::init()
     double randomColorV = (globalRandom.uniformContinuous(50, 200));
     double randomColorB = (globalRandom.uniformContinuous(50, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
-    dotColor_light      = IM_COL32(randomColorR + 55, randomColorV + 55, randomColorB + 55, 200);
-    dotColor_dark       = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
+
+    float blendFactor = 0.7;
+
+    int lightR = randomColorR + blendFactor * (255 - randomColorR);
+    int lightG = randomColorV + blendFactor * (255 - randomColorV);
+    int lightB = randomColorB + blendFactor * (255 - randomColorB);
+
+    lightR = std::min(255, lightR);
+    lightG = std::min(255, lightG);
+    lightB = std::min(255, lightB);
+
+    dotColor_light = IM_COL32(lightR, lightG, lightB, 230);
+    dotColor_dark  = IM_COL32(randomColorR - 40, randomColorV - 40, randomColorB - 40, 100);
 
     // les pièces blanches
     placePiece(new Piece("Rook", "White", {0, 0}), 0, 0);
@@ -214,12 +230,14 @@ void Board::renderPieces()
 // Afficher le sticky stuff
 void Board::renderStickyStuff(auto visiblyStickyTiles)
 {
+    int index = 0;
     for (const auto& tile : visiblyStickyTiles)
     {
         ImVec2 pos = board_pos + ImVec2(tile.first * square_size, (7 - tile.second) * square_size);
-        ImGui::GetWindowDrawList()->AddCircleFilled(pos + ImVec2(square_size / 2, square_size / 2), square_size * 0.25f, IM_COL32(0, randomColorV, 0, 60));
+        ImGui::GetWindowDrawList()->AddCircleFilled(pos + ImVec2(square_size / 2, square_size / 2), stikySizes[index], IM_COL32(0, 250, 0, 80));
+        index++;
     }
-};
+}
 
 // Afficher une pièce à une position spécifique
 void Board::renderPieceAt(Piece* piece, int x, int y)
@@ -374,18 +392,11 @@ bool Board::movePiece(const std::pair<int, int>& from, const std::pair<int, int>
 
             if (tileAttempts[from] <= tileThresholds[from])
             {
-                std::cout << "La pièce " << piece->get_type() << " est sur une case collante! "
-                          << "Tentative " << tileAttempts[from] << "/" << tileThresholds[from]
-                          << " pour s'en libérer." << std::endl;
                 performMove(piece, from, from);
                 return false;
             }
             else
             {
-                std::cout << "La pièce " << piece->get_type() << " a réussi à se libérer de la case collante "
-                          << "après " << tileAttempts[from] << " tentatives!" << std::endl;
-
-                // Réinitialiser le compteur après avoir libéré la pièce
                 tileAttempts[from] = 0;
             }
         }

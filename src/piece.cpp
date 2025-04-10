@@ -138,15 +138,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             if (x + 1 < 8 && y + 1 < 8 && is_enemy({x + 1, y + 1}, board))
                 possible_moves.push_back({x + 1, y + 1});
 
-            // Promotion si le pion atteint la dernière ligne
-            if (y == 6)
-            {
-                // Le pion atteint la dernière ligne (promotion possible)
-                std::cout << "Le pion blanc atteint la dernière ligne et peut être promu !" << std::endl;
-                // Ajoutez ici la logique pour effectuer la promotion du pion.
-            }
-
-            // Prise en passant (si un pion adverse a bougé de deux cases)
+            // Prise en passant (si un pion adverse a bougé de deux cases) - Pas terminer il manque la disparition de la piece adverse
             // if (y == 4)
             // {
             //     // Vérification des pions adverses qui se trouvent sur la même ligne
@@ -176,15 +168,7 @@ std::vector<std::pair<int, int>> Piece::possible_moves(const std::vector<std::ve
             if (x + 1 < 8 && y - 1 >= 0 && is_enemy({x + 1, y - 1}, board))
                 possible_moves.push_back({x + 1, y - 1});
 
-            // Promotion si le pion atteint la dernière ligne
-            if (y == 1)
-            {
-                // Le pion atteint la dernière ligne (promotion possible)
-                std::cout << "Le pion noir atteint la dernière ligne et peut être promu !" << std::endl;
-                // Ajoutez ici la logique pour effectuer la promotion du pion.
-            }
-
-            // Prise en passant (si un pion adverse a bougé de deux cases)
+            // Prise en passant (si un pion adverse a bougé de deux cases) - Pas terminer il manque la disparition de la piece adverse
             // if (y == 3)
             // {
             //     // Vérification des pions adverses qui se trouvent sur la même ligne
