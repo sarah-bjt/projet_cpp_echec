@@ -1,7 +1,3 @@
-// le gentil board.cpp
-
-// board.cpp
-
 #include <imgui.h>
 #include <board.hpp>
 #include <string>
@@ -65,9 +61,9 @@ void Board::init()
     std::cout << "Police choisie : " << chosenFontIndex << std::endl;
 
     // Définir une couleur aléatoire pour les cases
-    double randomColorR = (globalRandom.uniformContinuous(0, 200));
-    double randomColorV = (globalRandom.uniformContinuous(0, 200));
-    double randomColorB = (globalRandom.uniformContinuous(0, 200));
+    double randomColorR = (globalRandom.uniformContinuous(50, 200));
+    double randomColorV = (globalRandom.uniformContinuous(50, 200));
+    double randomColorB = (globalRandom.uniformContinuous(50, 200));
     squareColor         = IM_COL32(randomColorR, randomColorV, randomColorB, 255);
 
     // Placer les pièces blanches (en bas sur la ligne 0)
@@ -533,7 +529,7 @@ bool Board::is_piece_at(const std::pair<int, int>& pos)
 
 void Board::handleRandom()
 {
-    ImGui::SetCursorPos(ImVec2(10, 10)); // Positionnez le bouton où vous voulez
+    ImGui::SetCursorPos(ImVec2(30, 30)); // Positionnez le bouton où vous voulez
     if (ImGui::Button(activate_random ? "Disable Random Mode" : "Enable Random Mode"))
     {
         activate_random = !activate_random;
