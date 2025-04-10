@@ -1,5 +1,4 @@
 #pragma once
-
 #include <glad/glad.h>
 #include <vector>
 #include <string>
@@ -15,19 +14,19 @@ public:
     Skybox();
     ~Skybox();
 
-    void init(const std::vector<std::string>& faces); // Initialiser avec les textures de la skybox
-    void render(GLuint shaderProgram, const glm::mat4& projection, const glm::mat4& view) const; // Rendu de la skybox
+    void init(const std::vector<std::string>& faces);
+    void render(GLuint shaderProgram, const glm::mat4& projection, const glm::mat4& view) const;
 
 private:
-    GLuint m_skyboxTexture; // Identifiant de la texture cubemap
-    VAO m_vao;              // VAO pour la skybox
-    VBO m_vbo;              // VBO pour la skybox
-    EBO m_ebo;              // EBO pour la skybox
+    GLuint m_skyboxTexture;
+    VAO m_vao;
+    VBO m_vbo;
+    EBO m_ebo;
 
-    GLuint m_floorVAO;      // VAO pour le sol
-    GLuint m_floorVBO;      // VBO pour le sol
-    GLuint m_floorEBO;      // EBO pour le sol
+    GLuint m_floorVAO;
+    GLuint m_floorVBO;
+    GLuint m_floorEBO;
 
-    void loadCubemap(const std::vector<std::string>& faces); // Chargement des textures cubemap
-    void setupSkyboxData(); // Configuration des données de la skybox (vertices, etc.)
+    void loadCubemap(const std::vector<std::string>& faces);
+    void setupSkyboxData();
 };

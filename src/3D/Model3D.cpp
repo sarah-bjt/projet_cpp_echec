@@ -10,7 +10,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <../../import/stb_image.h>
 
-// Fonction pour charger une texture à partir d'un fichier (sans GLEW)
 GLuint Model3D::loadTexture(const std::string& texturePath) {
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
@@ -27,11 +26,10 @@ GLuint Model3D::loadTexture(const std::string& texturePath) {
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    stbi_image_free(data);  // Libère l'image après avoir chargé la texture
+    stbi_image_free(data);
     return textureID;
 }
 
-// Fonction pour charger le fichier .mtl
 std::unordered_map<std::string, Material> Model3D::loadMTL(const std::string& mtlFilename) {
     std::ifstream file(mtlFilename);
     std::unordered_map<std::string, Material> materials;
@@ -49,11 +47,11 @@ std::unordered_map<std::string, Material> Model3D::loadMTL(const std::string& mt
         ss >> prefix;
 
         if (prefix == "newmtl") {
-            // Nouveau matériau
+            
             ss >> currentMaterial.name;
         }
         else if (prefix == "map_Kd") {
-            // Texture diffuse
+            
             ss >> currentMaterial.textureFile;
             materials[currentMaterial.name] = currentMaterial;
         }
@@ -64,14 +62,12 @@ std::unordered_map<std::string, Material> Model3D::loadMTL(const std::string& mt
 }
 
 bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFilename) {
-    // Maps pour stocker les propriétés par nom de matériau
     std::unordered_map<std::string, glm::vec3> mapKd;
     std::unordered_map<std::string, glm::vec3> mapKa;
     std::unordered_map<std::string, glm::vec3> mapKs;
     std::unordered_map<std::string, float> mapNs;
     std::unordered_map<std::string, GLuint> mapTextureID;
 
-    // Charger les propriétés des matériaux
     std::ifstream mtlFile(mtlFilename);
     if (mtlFile.is_open()) {
         std::string mtlLine, currentMat;
@@ -97,8 +93,7 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
             }
             else if (mPrefix == "map_Kd") {
                 std::string textureFile; mss >> textureFile;
-                // Optionnel : charger la texture ici, par ex :
-                GLuint texID = loadTexture(textureFile); // selon ton système
+                GLuint texID = loadTexture(textureFile);
                 mapTextureID[currentMat] = texID;
             }
         }
@@ -149,7 +144,7 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
                 int vIndex = 0, tIndex = 0, nIndex = 0;
                 vertexStream >> vIndex >> tIndex >> nIndex;
 
-                vIndex--; tIndex--; nIndex--; // Ajuste l'indexation à 0
+                vIndex--; tIndex--; nIndex--;
 
                 if (vIndex < 0 || vIndex >= static_cast<int>(tempVertices.size())) continue;
                 if (tIndex < 0 || tIndex >= static_cast<int>(tempTexCoords.size())) continue;
@@ -180,20 +175,16 @@ bool Model3D::loadFromFile(const std::string& filename, const std::string& mtlFi
         return false;
     }
 
-    // Charger le fichier MTL pour obtenir les matériaux
     std::unordered_map<std::string, Material> materials = loadMTL(mtlFilename);
     if (!materials.empty()) {
-        // On suppose que le modèle utilise le matériau "board_material"
         if (materials.find("board_material") != materials.end()) {
             std::string texturePath = materials["board_material"].textureFile;
             
-            // Ajouter un chemin relatif si le fichier texture est dans le même dossier que le fichier .mtl
             size_t lastSlashPos = mtlFilename.find_last_of("/\\");
             std::string dir = mtlFilename.substr(0, lastSlashPos + 1);
             std::string fullTexturePath = dir + texturePath;
 
-            // Charger la texture avec le chemin complet
-            textureID = loadTexture(fullTexturePath); // Charger la texture
+            textureID = loadTexture(fullTexturePath);
         }
     }
 
