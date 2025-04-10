@@ -1,6 +1,10 @@
 #version 330 core
 out vec4 FragColor;
 
+in vec2 TexCoord; // Reçoit la coordonnée de texture du vertex shader
+
+uniform sampler2D texture1; // La texture que tu veux utiliser
+
 void main() {
-    FragColor = vec4(0.8, 0.6, 0.4, 1.0); // Marron clair pour le bois
+    FragColor = texture(texture1, TexCoord); // Applique la texture à l'objet
 }

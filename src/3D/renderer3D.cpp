@@ -44,7 +44,7 @@ void Renderer3D::init()
     // std::cout << "Skybox loaded!" << std::endl;
 
     // === Plateau 3D ===
-    if (!m_boardModel.loadFromFile("../../assets/models/board/board.obj"))
+    if (!m_boardModel.loadFromFile("../../assets/models/board/board.obj", "../../assets/models/board/board.mtl"))
     {
         std::cerr << "Erreur : Impossible de charger le modèle du plateau." << std::endl;
         return;
