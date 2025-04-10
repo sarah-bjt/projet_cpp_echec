@@ -39,6 +39,7 @@ private:
     float m_zoom; // Niveau de zoom
     float m_radius; // Rayon de la sphère autour du centre
     float m_minPitch, m_maxPitch; // Limites du pitch (pour éviter les rotations extrêmes)
+    float m_minHeight;
 
     bool m_keys[1024]; // Tableau pour stocker l'état des touches
 };

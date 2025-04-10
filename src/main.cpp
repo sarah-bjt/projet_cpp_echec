@@ -29,6 +29,7 @@ int main()
     glm::vec3 center(0.0f, 0.0f, 0.0f);  // Le point autour duquel la caméra tourne
     Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, center);
 
+
     // Variable pour calculer le deltaTime
     float lastFrame = 0.0f;
 
