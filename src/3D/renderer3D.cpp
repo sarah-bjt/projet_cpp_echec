@@ -32,6 +32,86 @@ glm::vec3 calculateCenter(const std::vector<Vertex>& vertices)
     return center;
 }
 
+void drawTexturedModel(GLuint shaderProgram, GLuint textureID, GLuint VAO, const std::vector<GLuint>& indices) {
+    // Activer le VAO de l'objet
+    glBindVertexArray(VAO);
+
+    // Activer la première unité de texture (GL_TEXTURE0)
+    glActiveTexture(GL_TEXTURE0);
+
+    // Lier la texture à l'unité active
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Récupérer l'emplacement du uniform dans le shader
+    GLuint textureLoc = glGetUniformLocation(shaderProgram, "texture");
+
+    // Mettre à jour la valeur du uniform avec l'unité de texture (0 pour GL_TEXTURE0)
+    glUniform1i(textureLoc, 0);
+
+    // Dessiner l'objet avec les indices
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+    // Désactiver le VAO
+    glBindVertexArray(0);
+}
+
+void setupModelBuffers(GLuint& VAO, GLuint& VBO, GLuint& EBO, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
+    // Générer les objets VAO, VBO et EBO
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // Lier le VAO
+    glBindVertexArray(VAO);
+
+    // Lier et remplir le VBO avec les données des vertices
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+    // Lier et remplir le EBO avec les indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+    // Configurer les attributs de vertex
+
+    // Position (attribut 0)
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+
+    // Normal (attribut 1)
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+
+    // Texture Coordinate (attribut 2)
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
+    // Diffuse Color (attribut 3)
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Kd));
+
+    // Specular Color (attribut 4)
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ks));
+
+    // Ambient Color (attribut 5)
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ka));
+
+    // Shininess (attribut 6)
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ns));
+
+    // Texture usage flag (attribut 7)
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(7, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, useTexture));
+
+    // Désactiver le VAO
+    glBindVertexArray(0);
+}
+
+
+
 void Renderer3D::init()
 {
     // === Skybox shaders ===
@@ -61,43 +141,7 @@ void Renderer3D::init()
     GLuint boardFS = compileShader("../../assets/shaders/board.fs.glsl", GL_FRAGMENT_SHADER);
     m_boardShader  = linkProgram(boardVS, boardFS);
 
-    glGenVertexArrays(1, &m_boardVAO);
-    glGenBuffers(1, &m_boardVBO);
-    glGenBuffers(1, &m_boardEBO);
-
-    glBindVertexArray(m_boardVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_boardVBO);
-    glBufferData(GL_ARRAY_BUFFER, m_boardModel.getVertices().size() * sizeof(Vertex), m_boardModel.getVertices().data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_boardEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_boardModel.getIndices().size() * sizeof(uint32_t), m_boardModel.getIndices().data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Kd));
-
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ks));
-
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ka));
-
-    glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Ns));
-
-    glEnableVertexAttribArray(7);
-    glVertexAttribPointer(7, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, useTexture));
-
-    glBindVertexArray(0);
+    setupModelBuffers(m_boardVAO, m_boardVBO, m_boardEBO, m_boardModel.getVertices(), m_boardModel.getIndices());
 }
 
 void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float deltaTime, Camera& camera)
@@ -108,7 +152,7 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     // Calcul de la matrice de vue
     glm::mat4 view = camera.getViewMatrix();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     // Clear buffers (on efface la profondeur et la couleur)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -142,21 +186,11 @@ void Renderer3D::render(const glm::mat4& projection, GLFWwindow* window, float d
     // Envoi de la position de la lumière et de la caméra
     glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 0.0f);  // Position de la lumière
 
-    // Appliquer la même translation à la lumière pour la garder au bon endroit
-    //lightPos = glm::vec3(model * glm::vec4(lightPos, 1.0f));
-
     glm::vec3 viewPos = camera.getPosition();  // Position de la caméra
     glUniform3fv(lightPosLoc, 1, glm::value_ptr(lightPos));
     glUniform3fv(viewPosLoc, 1, glm::value_ptr(viewPos));
 
-    // Dessin du plateau
-    glBindVertexArray(m_boardVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_boardModel.textureID);
-        GLuint textureLoc = glGetUniformLocation(m_boardShader, "texture");
-        glUniform1i(textureLoc, 0);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_boardModel.getIndices().size()), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    drawTexturedModel(m_boardShader, m_boardModel.textureID, m_boardVAO, m_boardModel.getIndices());
 } //
 
 GLuint Renderer3D::compileShader(const std::string& path, GLenum type)

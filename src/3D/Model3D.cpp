@@ -11,54 +11,23 @@
 #include <../../import/stb_image.h>
 
 // Fonction pour charger une texture à partir d'un fichier (sans GLEW)
-// GLuint Model3D::loadTexture(const std::string& texturePath) {
-//     int width, height, nrChannels;
-//     unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
-//     if (!data) {
-//         std::cerr << "Erreur de chargement de la texture : " << texturePath << " -> " << stbi_failure_reason() << std::endl;
-//         return 0;
-//     }
-
-//     GLuint textureID;
-//     glGenTextures(1, &textureID);
-//     glBindTexture(GL_TEXTURE_2D, textureID);
-
-//     GLenum format = (nrChannels == 3) ? GL_RGB : GL_RGBA;
-//     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-//     glGenerateMipmap(GL_TEXTURE_2D);
-
-//     stbi_image_free(data);  // Libère l'image après avoir chargé la texture
-//     return textureID;
-// }
 GLuint Model3D::loadTexture(const std::string& texturePath) {
-    // Charger l'image à partir du fichier avec stb_image
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
-
-    // Vérifier si l'image est bien chargée
     if (!data) {
         std::cerr << "Erreur de chargement de la texture : " << texturePath << " -> " << stbi_failure_reason() << std::endl;
         return 0;
     }
 
-    // Créer un identifiant de texture OpenGL
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Choisir le format correct en fonction du nombre de canaux (on suppose que BMP a 3 ou 4 canaux)
     GLenum format = (nrChannels == 3) ? GL_RGB : GL_RGBA;
-
-    // Générer la texture OpenGL avec les données de l'image
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-
-    // Générer les mipmaps pour la texture (utile pour le filtrage)
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // Libérer les données d'image après avoir fini de les utiliser
-    stbi_image_free(data);
-
-    // Retourner l'ID de la texture générée
+    stbi_image_free(data);  // Libère l'image après avoir chargé la texture
     return textureID;
 }
 

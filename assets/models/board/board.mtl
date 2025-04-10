@@ -21,7 +21,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd "C:/Users/janag/Documents/Cours/ANNEE 2/c++/Echec/projet_cpp_echec/assets/models/board/black_glass_texture.bmp"
+map_Kd ../../assets/models/board/glass_texture.jpg
 
 newmtl Glass
 Ns 250.000000

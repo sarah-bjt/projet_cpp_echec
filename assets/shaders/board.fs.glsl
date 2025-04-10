@@ -17,7 +17,8 @@ uniform sampler2D texture;
 void main() {
     vec3 texColor;
     if (useTexture != 0) {
-        texColor = texture(texture, TexCoord).rgb;
+        vec2 uv = -TexCoord;
+        texColor = texture(texture, uv).rgb;
     } else {
         texColor = vec3(1.0, 1.0, 1.0); 
     }
